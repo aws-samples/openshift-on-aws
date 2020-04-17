@@ -1,0 +1,9 @@
+{
+  "name": "cf-nodejs",
+  "version": "1.0.0",
+  "dependencies": {
+    "aws-sdk": "^2.248.1",
+    "express": "^4.16.3",
+    "jade": "^1.11.0"
+  }
+}

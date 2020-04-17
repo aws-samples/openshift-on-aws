@@ -1,0 +1,293 @@
++++
+title = "Working with templates"
+chapter = false
+weight = 2
++++
+
+
+
+:imagesdir: /images
+
+
+As Buinesses attempt to modernize, much focus is places on maintaining agility. Part of this is via developer productivity and reduction of operational overhead, combined with a shift to the left. 
+
+Instead of infrastructure teams standing up required resources such as databases, the modern Dev team has the ability to deploy and manage these themselves. Hoever instead of Dev teams investing effort into building their own database and stroage solutions agaility can be gained by using existing building blocks.
+
+In this lab exercise we will learn how to use OpenShift Web Console to
+spin up a MySQL database using templates. We will then add a frontend
+PHP application that accesses this database using the service exposed by
+the database. We will provide a route (a URL) to access the frontend
+application from a browser.
+
+Step 1:: Create a Project*
+
+Based on the experience gained from the previous exercise, log into the
+OpenShift Web Console. You will see the list of Projects.
+
+----
+Using the *Create Project* button, create a new project. We will call it
+*templatelab*.  Type in a *Display Name* and *Description* of your choice.
+
+Press the *Create* button to complete the project creation from the Web
+Console. This will accomplish the same job as `oc new-project` from CLI.
+----
+
+Step 2:: Create a MYSQL database using a template
+
+----
+Click on *Add to Project 
+Select from catalog
+----
+
+You can search through a long list of existing solutions or search.
+
+----
+In the "*Search Catalog*" field type '*mysql*'
+Select *Mysql* (ephemeral)
+Click on the *Instantiaite Template* button
+
+You will be taken to the mysql ephemeral creation screen. 
+
+Edit the values to use the following values:
+
+....
+Database Service Name:     mysql
+MySQL Connection Username: pricelist
+MySQL Connection Password: pricelist
+MySQL root user Password:  pricelist
+MySQL Database Name:       pricelist
+....
+
+Click the "*Create*" button
+----
+
+This will deploy a new pod running the database.
+
+----
+Select tolopogy 
+Chage the project to * tenmpatelab*
+----
+
+Here you can explore the running service.
+
+
+Step 3:: Add data to MySQL database*
+
+Let us see how we can enter the pod and access the database.
+
+From the command line, change the project to the
+`<your_project>` using the following command:
+
+----
+$ oc project <your_project>
+----
+
+Get the list of running pods by running:
+
+----
+$ oc get pods
+----
+
+You will find one pod for mysql running. Take a note of it's name.
+
+Enter the pod by running the following command. Substitute the pod name
+with your mysql pod name.
+
+----
+$ oc rsh mysql-1-aewve
+
+bash-4.2$
+----
+
+You will be taken to a bash prompt inside the running pod. Now using the
+service ip address you noted earlier, port number, username and password
+you used start the mysql client as shown below. You will have to
+substitute your values here.
+
+TIP: If you need service ip address navigate to *Applications->Services* tab on the Web Console.
+
+[source,sh]
+----
+mysql -h127.0.0.1 -P3306 -upricelist -p
+----
+
+You will be taken to the `mysql` prompt. See the list of databases. You
+will notice that the sample database that you requested is added and
+available.
+
+[source,sh]
+----
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| pricelist          |
++--------------------+
+2 rows in set (0.00 sec)
+----
+
+Change over to use the `pricelist` database.
+
+[source,sh]
+----
+mysql> use pricelist;
+Database changed
+----
+
+Let's us create two tables and add some records using the commands shown below.
+
+Create the table:
+
+[source,sql]
+----
+create table products (
+id int(11) NOT NULL auto_increment,
+name varchar(32) NOT NULL,
+description text NOT NULL,
+price int(11) NOT NULL,
+category_id int(11) NOT NULL,
+created datetime NOT NULL,
+modified timestamp NOT NULL default CURRENT_TIMESTAMP,
+PRIMARY KEY  (id)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=14 ;
+                            
+create table categories (
+id int(11) NOT NULL auto_increment,
+name varchar(256) NOT NULL,
+created datetime NOT NULL,
+modified timestamp NOT NULL default CURRENT_TIMESTAMP,
+PRIMARY KEY  (id)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+----
+
+Now we add some data:
+
+[source,sql]
+----
+insert into categories VALUES(1, 'Fashion', '2014-06-01 00:35:07', '2014-05-31 09:34:33');
+insert into categories VALUES(2, 'Electronics', '2014-06-01 00:35:07', '2014-05-31 09:34:33');
+insert into categories VALUES(3, 'Motors', '2014-06-01 00:35:07', '2014-05-31 09:34:54');
+insert into categories VALUES(4, 'Miscellaneous', '2014-06-01 00:35:07', '2014-05-31 09:34:54');
+----
+
+Verify that the records you added are there:
+
+[source,sql]
+----
+select * from categories;
+----
+
+Now `exit` MySQL client and `exit` out of the pod.
+
+Step 4:: Add a PHP frontend to talk to this database*
+
+In this step we will add a PHP frontend application that talks to
+recently created database. The code is available on github at
+https://github.com/RedHatWorkshops/php-pricelist
+
+Browse through the code in this repository. If you take a look at the
+link:https://raw.githubusercontent.com/RedHatWorkshops/php-pricelist/master/config/database.php[database configuration] file (`config/database.php`) you will see that it reads the values from environment varables.
+
+----
+Click on *+add*
+Select *From git*
+Add https://github.com/RedHatWorkshops/php-pricelist to the git repo url
+Select the php builder image
+Change the name to pricelist
+Click on *create*
+----
+
+
+
+You will also notice that a build starts running very soon. Once the
+build completes, the application image created from the source code will
+be uploaded to the docker repository.
+
+You can check the build logs using the following command:
+
+....
+$ oc logs build/pricelist-1
+Cloning "https://github.com/RedHatWorkshops/php-pricelist" ...
+	Commit:	2aa50442e8432c48beedc1503cd3d05dcb834515 (Added db connection)
+	Author:	Christian Hernandez <christian.hernandez@yahoo.com>
+	Date:	Thu Jun 29 10:52:43 2017 -0700
+---> Installing application source...
+Pushing image docker-registry.default.svc:5000/consoleproject-christian/pricelist:latest ...
+Pushed 0/6 layers, 2% complete
+Pushed 1/6 layers, 26% complete
+Pushed 2/6 layers, 42% complete
+Pushed 3/6 layers, 56% complete
+Pushed 4/6 layers, 75% complete
+Pushed 5/6 layers, 97% complete
+Pushed 6/6 layers, 100% complete
+Push successful
+....
+
+Once the build completes, OpenShift initiates a deploy process. Once the
+deployment is complete, the frontend pod starts running. 
+
+
+Step 5:: explore the running application
+
+In this section we will explore the console interface for build and running logs, explore the routes which allow for external access and look at the Environmnet Variables used to bind applications to other services.
+
+----
+Select topology
+Click on the PHP pricelist application
+Select the overview tab
+----
+
+Here you will see general information regarding the application.
+
+----
+Click on the actions drop down.
+Note the ability to scale the number of application pods.
+Note the ability to modify deployment config.
+----
+
+Should you add more pod of the same application OpenShifts routing layer will deal with the networking and load balance connections to these pods.
+
+----
+Scale up the application either by clicking on the up arrow next to the pods icon
+select the Resources tab
+Take note of :
+Routes
+Services
+Builds
+----
+
+Each of these will contain different info about the application.
+
+----
+Under builds click on the pricelist build config.
+Select the YAML tab
+note the build config was generated from the php app from git template and contains much of what is needed for automation via git web hooks.
+Select the environment tab
+----
+
+Add the following Environment variables to the application:
+----
+....
+MYSQL_SERVICE_HOST : mysql
+MYSQL_SERVICE_PORT : 3306
+MYSQL_DATABASE     : pricelist
+MYSQL_USER         : pricelist
+MYSQL_PASSWORD     : pricelist
+....
+
+Then click the "Save" button to commit the variables.
+----
+
+Next navigate back to the Project page by clicking the "Overview" link on the left.
+
+The Pricelist application will redeploy after changing the Environment variables.  
+
+When complete click on the *Route* for the application.
+
+The application should display in the Browser.  Click the *+Create Record* button and create a new Record.
+
+Then click on the *Read Records* button to return to the main page, you should see your new record.
+
+

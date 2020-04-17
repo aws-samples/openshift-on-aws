@@ -1,0 +1,6 @@
+---
+applications:
+- name: S3-sample
+  memory: 512M
+  instances: 1
+  random-route: true

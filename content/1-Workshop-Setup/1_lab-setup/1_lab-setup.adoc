@@ -1,0 +1,104 @@
++++
+title = "Workshop Lab Setup"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+== Workshop Lab Setup:
+This will guide you through deploying an OpenShift lab env into an AWS a collection of AWS CloudFormation templates and Lambda functions. 
+
+== High level instructions:
+
+Step 1:: Create a AWS Key Pair
+Step 2:: Create AWS AWS Route 53 Hosted Zone
+Step 3:: Extract Pub key SSH secret from AWS key pair .pem file
+Step 4:: Download Red Hat pull secret
+Step 5:: Create AWS S3 bucket for template storage
+Step 6:: Clone lab launcher repo
+Step 7:: Upload lab launcher files to S3
+Step 8:: Deploy labs using CloudFormation
+
+
+== Step by step instructions and follow me
+
+Step 1:: Create a AWS Key Pair
+----
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+----
+image::CreateKeyPair.gif[Create keypair]
+
+Step 2:: Extract Pub key SSH secret from AWS key pair .pem file
+
+During the create keypair process you will have downloaded the related public .pem file
+We will extact the public key secret for later use.
+----
+chmod 600 opclablaunch.pem 
+ssh-keygen -f opclablaunch.pem -y > public.pub
+less public.pub
+
+The secret will look something like:
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDMZl4PXJMzRqGF1jT3idHDLSDDJbcSkR0LBRL5aHksHgvvUzBVzFckGu9oLPM0Wwyw5QG1Hiks6/rIoj.....
+----
+
+image::Getpublickey.gif[Export pub key]
+
+Step 3:: Create AWS AWS Route 53 Hosted Zone.
+----
+https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingHostedZone.html
+----
+
+Step 4:: Download Red Hat pull secret
+----
+login to https://cloud.redhat.com/openshift/
+Select clusters from the left menu
+Click on create cluster
+Select OpenShift Container Platform
+Select Run on AWS
+Scroll down to *Pull Secret*
+Click on Download Pull secret, this will be needed as a parameter input during the stack launch later.
+----
+
+image::GetPullSecret.gif[Getpullsecret]
+
+Step 5:: Create AWS S3 bucket for template storage
+----
+https://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html
+----
+
+
+Step 6:: Clone lab launcher repo
+----
+git clone git@github.com:rniksch/Openshift4-lab-launcher.git
+----
+
+Step 7:: Upload lab launcher files to S3
+----
+https://docs.aws.amazon.com/AmazonS3/latest/gsg/PuttingAnObjectInABucket.html
+----
+
+image::UploadRepotoS3.gif[upload to S3]
+
+Step 8:: Deploy labs using CloudFormation
+----
+Login to the AWS CloudFormation console
+Select Stacks on the left
+click on create stack on the right 
+select with new resources (standard)
+Select on upload template
+Click on choose file
+Browse to the master template file
+click next
+complete the parameters inputs 
+launch stack
+----
+
+This stack will create AWS lambda functions which will create a OCP environment and dev UI for each student.
+
+image::stacklaunch.gif[stacklaunch]
+
+
+

@@ -1,0 +1,114 @@
++++
+title = "Deploying applications via the web console"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+In this module we will explore how to deploy a containerized application via the web console. OpenShift Container Platform offers different ways to deploy your applications. You can deploy a container image; or point OpenShift Container Platform to a source code repository to build and deploy the application. It also allows you to deploy an entire workload via Templates. In this exercise, we will see how easy it is to deploy a simple container image via the web console.
+
+
+Step 1:: Connecting to the OpenShift web console:
+
+----
+----
+
+Step 2:: Create a project
+
+----
+----
+
+Step 3:: explore the project
+
+Click on the project and you will be brought to the project console which shows that there is no workload running.
+
+Projects provide a control mechanism within OpenShift, these can function as an application grouping means, or a permission boundry. On AWS projects can be used in resource tagging as well as cost management.
+
+Step 4:: Swap hats , developer and admin interfaces.
+
+OpenShift started as a very developer focused solution but over the years it has become powerful for both developers and administrators providing contextual interfaces for both.
+
+As you have full access to this cluster you are able to see both perspectives.
+Yes interfaces and actions can be restriced via roll bases access controls and policies within OpenShift. 
+
+----
+Select developer from the top left drop down.
+Note the developer controls.
+Select administrator from the top left drop down.
+Note the administrator controls.
+Switch back to the developer context.
+----
+
+Step 5:: Adding and application to a project:
+
+----
+To deploy a container image, click on '+Add' in the left menu.
+Select the application source, in this case an existing container image.
+----
+
+image::exercise-2-1.png[project]
+
+On the deploy 'Container Image' page, enter:
+
+----
+copy and paste the following into the image name search field
+openshiftroadshow/parksmap-katacoda:1.2.0
+----
+
+This will trigger a query from Docker hub to pull down the image information.
+
+----
+Enter an "myapp" for the ``Application Name`` and also for the ``Name`` fields. 
+
+Click on 'Create' button to deploy the container image on OpenShift. Behind the scenes, OpenShift will pull down the image, create the necessary OpenShift objects (services, deploymentConfig) and deploy the image.
+----
+
+image::exercise-2-2.png[project]
+
+You will be lead to the Topology view showing your application.
+
+image::exercise-2-3.png[project]
+
+----
+Click on the application donut to open up a side menu with more information.
+----
+
+image::exercise-2-5.jpeg[project]
+
+
+You will be lead to the page displaying information on the Route object.  Under the ```Location``` section on the right of the page, is the URL to access the application.
+----
+Click on the URL to access the application. 
+----
+
+ The application simply displays a map of the world.  If you see that, the application is running successfully!!
+
+image::deploy-img-e.png[project]
+
+You will note that in this module a developer could take a simple existing docker container and Openshift would interpret it, generate the required template for how to run and orchestrate the container. OpenShift automatically created a route which deals with the networking and exposed the application to the world.
+
+It is these abstractions provided by OpenShift that make things easier and faster providing greater developer productivity and agility. Which compliment modernization efforts of businesses.
+
+Clean up the resources for this exercise, you won't be using them anymore.
+
+----
+oc delete all --all
+----
+
+In your terminal you should see all the configurations and objects being deleted. You will see similar output to the following:
+
+```
+pod "parksmap-katacoda-1-9f8xx" deleted
+pod "parksmap-katacoda-1-deploy" deleted
+replicationcontroller "parksmap-katacoda-1" deleted
+service "parksmap-katacoda" deleted
+deploymentconfig.apps.openshift.io "parksmap-katacoda" deleted
+imagestream.image.openshift.io "parksmap-katacoda" deleted
+route.route.openshift.io "myname" deleted
+```
+
+
