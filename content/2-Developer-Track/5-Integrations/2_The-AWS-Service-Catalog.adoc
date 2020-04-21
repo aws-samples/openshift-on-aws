@@ -7,3 +7,48 @@ weight = 2
 
 :imagesdir: /images
 
+AWS Service Catalog allows organizations to create and manage catalogs of IT services that are approved for use on AWS. These IT services can include everything from virtual machine images, servers, software, and databases to complete multi-tier application architectures. AWS Service Catalog allows you to centrally manage commonly deployed IT services, and helps you achieve consistent governance and meet your compliance requirements, while enabling users to quickly deploy only the approved IT services they need.
+
+https://aws.amazon.com/servicecatalog
+
+## Benefits:
+Ensure compliance with corporate standards
+Centrally manage IT service lifecycle
+Help employees quickly find and deploy approved IT services
+Connect with ITSM/ITOM software
+Version control
+Constraints
+Granular access control
+
+AWS Service Catalog allows admins to create portfolios with products which other teams can access and consume in a self service model. 
+
+Products can have granular access controls and constraints added.
+Constraints allow for prescritive control of how products are consumed. i.e a product like AWS RDS database when launched into a test account may have certain settings tags or sizing limits to manage costs. The same product would have enforced tagging, encryption, backup etc when used in production.
+
+
+## Service Catalog vs brokers and operators.
+
+At this stage AWS Service Catalog does not directly integrate with OpenShift. Teams would need to go to a console of published products and provision the product for use.  As such AWS service catalog does not provide the interface, and context switch benefits of brokers and operators.
+
+Teams would then collect info about the product and manually create OpenShift Secrets for binding to applications.
+ 
+
+## Why would I want this?
+
+AWS Service Catalog provides a consistent control means across the entire organization even those not using platforms like OpenShift. 
+
+This makes AWS Service Catalog combined with OpenShift a good fit when catering for the entire business vs certain teams. This is also a good fit for company structures where there is a cloud center of exellence or infrastructure team which has to control access and provisioning of AWS resources to the entire business.
+
+
+## AWS Service catalog can be just as prescritive.
+
+AWS service catalog admins can take the templates used by other integrations like the AWS service broker, and load these as products into a portfolio. Though the AWS Service broker does not have plans, admins can load two products using the same broker template with different constraints providing the function of plans.
+
+We will explore the admin side of Service catalog under the administrator track, and the application interaction later in this workshop.
+
+
+
+
+
+
+
