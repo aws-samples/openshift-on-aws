@@ -1,0 +1,48 @@
++++
+title = "The AWS Service Broker"
+chapter = false
+weight = 1
++++
+
+
+:imagesdir: /images
+
+image::SB.gif[project]
+
+The AWS service broker is is an open source project it allows for dev and ops teams to provision AWS native resources and expose these to appllication worksloads from within OpenShift.
+
+https://aws.amazon.com/partners/servicebroker/
+
+The Service broker is build on the open service broker API.
+
+The broker makes use of prescritive infrastructure as code templates (CloudFormation) to build out the AWS resource.
+Devs can select the desired AWS service from within OpenShift, select a plan which is a prebuild grouping of parameters, add a limited number of required parameters and build out an AWS resources. 
+
+This reduced context, interface and hat switching. 
+Reduces the need to teams to have AWS console access, provides prescriptive access to only services needed. 
+
+The templates and plans can be inspected by security and modified if needed to fit the business or security use case.
+The prescritive approach is designed to enable dev team to start adding AWS services to their application stacks with best practice in mind as well as reduce learning curve. This helps drive adoption of AWS services and further modernization of workloads.
+
+Once the AWS service is provisioned the broker will store all info needed to consume the resource such as usernames, passwords, IAM roles, endpoints etc inside the openshift secrets where teams can then bind these with ease to applications.
+
+In the following video you can see a team member using the broker to launch an AWS RDS instace using the Service Broker.
+
+image::SBrdsdemo.gif[project]
+
+A service broker manages the deployment, configuration and lifecycle of services in a way that developers can easily plug services into their applications without having to get involved in the complexities of how to deploy them and what is needed to consume them. 
+
+Application platforms provide a marketplace or catalog of available services, once a service has been decided on it can be provisioned via gui, cli or declaritivily as part of an application manifest.
+
+Applications consuming services simply need to point to well-known environment variables to retrieve the details required to consume the instance of it that has been connected. This provides a turn-key way to separate configuration and code, makes code very re-usable/re-deployable, and removes the risk of sensitive credentials ending up in code repositories.
+
+
+Customers can add their own solutions through the service broker by using their own custom catalogs:
+
+https://aws.amazon.com/blogs/opensource/building-own-service-broker-services/
+
+https://aws.amazon.com/blogs/opensource/aws-service-broker-govcloud/
+
+
+
+
