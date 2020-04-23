@@ -12,19 +12,33 @@ weight = 1
 In this module we will explore how to deploy a containerized application via the web console. OpenShift Container Platform offers different ways to deploy your applications. You can deploy a container image; or point OpenShift Container Platform to a source code repository to build and deploy the application. It also allows you to deploy an entire workload via Templates. In this exercise, we will see how easy it is to deploy a simple container image via the web console.
 
 
-Step 1:: Connecting to the OpenShift web console:
+Step 1:: Connect to the OpenShift web console:
 
 ----
+This is the same process covered in the gettinf started module:
 ----
 
 Step 2:: Create a project
 
 ----
+Under the *developer* context
+expland advanced on the left
+expand projects
+click on create project
+create a project called *myproject*
+
+Under the *administrator* context
+expand home
+select projects 
+click create project
+
 ----
 
 Step 3:: explore the project
 
+----
 Click on the project and you will be brought to the project console which shows that there is no workload running.
+----
 
 Projects provide a control mechanism within OpenShift, these can function as an application grouping means, or a permission boundry. On AWS projects can be used in resource tagging as well as cost management.
 

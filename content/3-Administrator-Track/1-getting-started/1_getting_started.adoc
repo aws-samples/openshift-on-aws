@@ -30,30 +30,43 @@ Step 2:: Download the lab .pem file
 
 This .pem file will be used for SSH access to certain systems 
 ----
-[SSH Private Key - PEM ](https://s3-us-west-2.amazonaws.com/redhat-workshops/keys/ocp-lab.pem)
+wget https://s3-us-west-2.amazonaws.com/redhat-workshops/keys/ocp-lab.pem
 chmod 600 opclablaunch.pem 
 ----
 
 Step 3:: Clone the lab repo 
+
+This repo will contain all the files, scripts, templates needed for the labs. The Resources folder also contains presentation material.
+
 ----
-git clone git@github.com:aws-samples/openshift-on-aws.git
+git clone https://github.com/aws-samples/openshift-on-aws.git
 ----
 
 Step 4:: Connecting to the OpenShift web console
+
 ----
+https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
 ----
 
-https://docs.openshift.com/container-platform/4.2/web-console/web-console.html [OpenShift docs web console access]
+https://docs.openshift.com/container-platform/4.2/web-console/web-console.html
 
 Step 5:: Connecting to OpenShift using the CLI
+
+First we will download the oc client tools. These will then be used to connect to the OpenShift Cluster as well as perform command line functions in various labs.
+
 ----
-./oc login api.apps.lab3-student0.egrsolutions.co.za:6443
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+tar -zxvf openshift-client-linux.tar.gz
+sudo cp oc kubectl /usr/local/sbin
+oc login api.apps.demo-student1.egrsolutions.co.za:6443
 provide the username and password for the 
-https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html
+https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
 ----
 
-https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli_cli-developer-commands [OpenShift cli docs]
-https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/getting-started-cli.html#cli-logging-in_cli-developer-commands [logging in]
+*OpenShift cli docs*
+https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli_cli-developer-commands 
+*logging in*
+https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/getting-started-cli.html#cli-logging-in_cli-developer-commands 
 
 
 First, using the command line, view how you are authenticated with OpenShift:
@@ -89,8 +102,9 @@ Feeling brave? This will make you famous?
 oc cluster down -F & ./update-resume.sh
 ----
 
-https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/developer-cli-commands.html [developer cli commands]
-
-https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/administrator-cli-commands.html [administrator cli commands]
+*developer cli commands*
+https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/developer-cli-commands.html 
+*administrator cli commands*
+https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/administrator-cli-commands.html 
 
 
