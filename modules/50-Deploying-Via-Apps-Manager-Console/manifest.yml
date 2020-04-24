@@ -1,6 +1,0 @@
----
-applications:
-- name: pollyGUI
-  memory: 512M
-  instances: 1
-  random-route: true
