@@ -10,7 +10,9 @@ weight = 3
 Step 1:: change to the correct lab folder
 
 ----
-cd openshift-on-aws/modules/S2i 
+cd openshift-on-aws/modules
+mkdir S2i
+cd S2i
 ----
 
 
