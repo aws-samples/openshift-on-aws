@@ -10,7 +10,14 @@ weight = 3
 Step 1:: change to the correct lab folder
 
 ----
-cd openshift4-2020-workshop/labs/Lab4-running-faster-with-S2i
+cd openshift-on-aws/modules/S2i 
+----
+
+
+Step 2:: Clone app source code
+
+----
+git clone https://github.com/rniksch/flask-vote-app.git
 ----
 
 In this module you will use ``Source to Image`` to build and launch the voting application on OpenShift.
@@ -26,7 +33,7 @@ Source 2 Image (s2i) does the following:
 * After a successful build, s2i commits a new image containing the built application and pushes it into the internal registry of OpenShift. 
 * The container is launched because a new image has been created.  If the container is already running from a previous build, the container will be re-deployed.
 
-Step 2:: Connect to the OpenShift cluster using the cli
+Step 3:: Connect to the OpenShift cluster using the cli
 ----
 Connect to your Cloud 9 dev ui if you have not already done so.
 Connect to the workshop student landing page:
@@ -42,7 +49,7 @@ https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.ht
 "oc new-app" is the command that initializes an application in various ways on OpenShift. 
 You will use it to get your source code running on OpenShift. 
 
-Step 3:: perform a source to image dry run
+Step 4:: perform a source to image dry run
 
 We will make use of the ``new-app`` command with the ``--dry-run``
 
@@ -60,7 +67,7 @@ We will make use of the ``new-app`` command with the ``--dry-run``
 If there are no warnings or errors and all looks well, execute the command without the ``--dry-run`` option:
 
 
-Step 4:: Deploying an application using S2i
+Step 5:: Deploying an application using S2i
 
 ----
 oc new-app python:2.7~. --name vote-app --dry-run
@@ -145,7 +152,7 @@ vote-app-1-deploy  0/1       Running     0          3m
 vote-app-1-gxq5k   1/1       Running     0          30s
 ```
 
-Step 5:: Expose the application for testing 
+Step 6:: Expose the application for testing 
 
 By default, the application is not accessible from outside of OpenShift. Now, expose the application to the external network so it can be tested:
 
@@ -163,7 +170,7 @@ oc get route
 
 You should see the hostname to use to access the application. 
 
-Step 6:: Test the application 
+Step 7:: Test the application 
 
 To check the application is working you can either use curl or load the URL into your browser.
 
