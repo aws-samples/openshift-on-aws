@@ -165,6 +165,8 @@ or
 ----
 
 image::sbinstall.gif[project]
+image::SCSBadmin.png[project]
+image::SBonOCP4.gif[project]
 
 
 https://github.com/awslabs/aws-servicebroker/blob/master/docs/getting-started-openshift.md
