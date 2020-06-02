@@ -164,7 +164,7 @@ or
 ** If not using a role, access keys and secrets need to be provided
 ----
 
-
+image::sbinstall.gif[project]
 
 
 https://github.com/awslabs/aws-servicebroker/blob/master/docs/getting-started-openshift.md

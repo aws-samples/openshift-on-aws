@@ -22,8 +22,26 @@ https://aws.amazon.com/cloud9/ [https://aws.amazon.com/cloud9/]
 ----
 Connect to the workshop student landing page:
 https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html [Student landing page]
-Find and expand your student number
-Follow the instructions to connect to your Cloud 9 developer IDE
+
+Scroll down to Class Information
+Find and expand your student number click on it to expand.
+You will note three sections:
+The first is for SSH access, this may not be used.
+The second: AIO console info will be used to log into you own OpenShift cluster.
+The third: Cloud 9 environment info will be used to log into a developer environment.
+
+Open Both the AIO UI link and cloud 9 Console link in new tabs
+Use the details provided to login
+
+Should the Cloud 9 console link take you to root account login please change over to IAM:
+Click on sign into a different account
+Select IAM user
+Copy and paste the account number from the class info
+Click next
+copy past the username and password from the class info
+Click Next
+Click on launch IDE
+
 ----
 
 Step 2:: Download the lab .pem file 
