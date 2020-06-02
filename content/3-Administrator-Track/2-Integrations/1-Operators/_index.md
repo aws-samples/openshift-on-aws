@@ -1,7 +1,7 @@
 +++
 title = "Exploring Operators"
 chapter = true
-weight = 2
+weight = 1
 +++
 
 # Expoloring Operators
