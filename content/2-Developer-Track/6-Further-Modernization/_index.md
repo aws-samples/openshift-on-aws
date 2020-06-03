@@ -20,22 +20,20 @@ Though this is a starting point for many customers, a means of getting into the 
 
 AWS service are designed and build to be scalabile, resilient, elastic, secure. Adopting AWS native services into an application design means teams do not need to invest time in solving the challenges of making their own solutions scale, or address all the concerns realted to making a solution resilient. 
 
-## common pattern of evolution:
+## Common pattern of evolution
 
- ----
- Use containers for portability to lift and shift workloads to the cloud.
- Take advantage of tools, systems, interface and process teams are already familiar with to gain agility while learning new things.
- Break down monolithic container applications into smaller microservices.
- Adopt AWS native services to compliment container workloads or in some cases replace aspects of the application stack.
-----
+Use containers for portability to lift and shift workloads to the cloud.
+Take advantage of tools, systems, interface and process teams are already familiar with to gain agility while learning new things.
+Break down monolithic container applications into smaller microservices.
+Adopt AWS native services to compliment container workloads or in some cases replace aspects of the application stack.
 
 Commonly customers will adopt native database Services such as Amazon Relational database service RDS, nosql services such as DynamoDB, caching layers such as AWS Elasticache, messaging and queing, object storage. Customers select AWS as their primary cloud provider due to the comprehensive and growing service portfolio.
 
-## Questions:
-----
-How to expose teams to AWS Services they can adopt?
-How to reduce learning curve?
-How to enable self service?
-How to allow teams to safely, cost effectively explore services?
----- 
 
+## Questions
+
+- How to expose teams to AWS Services they can adopt?
+- How to reduce learning curve?
+- How to enable self service?
+- How to allow teams to safely, cost effectively explore services?
+ 

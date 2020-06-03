@@ -8,18 +8,22 @@ weight = 4
 :imagesdir: /images
 
 This module assumes that teh AWS Service Broker is installed and configured.
-If you have not already completed this, please complete the installing the service broker module under the administator track:
-https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/1_installing-the-aws-service-broker.html
+If you have not already completed this, please complete the installing the service broker module under the administator track
+
+link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/1_installing-the-aws-service-broker.html[Installing the AWS Service Broker under the admin track]
 
 
-## Using the OpenShift Serice Catolog to deploy AWS service via a graphical interface.
+
+Using the OpenShift Serice Catolog to deploy AWS service via a graphical interface.
 
 Step 1:: Connect to the OpenShift web console:
+
 ----
 This is the same process covered in the getting started module
 ----
 
 Step 2:: Create a project
+
 ----
 Under the *developer* context
 expland advanced on the left
@@ -51,6 +55,7 @@ All the info needed to consume the AWS Service such as arn, endpoint, URL, usern
 image::brokers3.gif[project]
 
 Step 3:: Clean up
+
 ----
 Expand advanced on the left
 Select projects
@@ -63,9 +68,10 @@ Click on delete
 
 Deleting the project will remove all artifaces from OpenShift including the services provided by the AWS Service Broker. The broker will perform an API call to AWS CloudFormation to delete the stack, removing the AWS services provisioned out of band. To protect against data loss, certain resources will be retained. RDS will create a final snapshot of the database, S3 will retail the bucket in the account, this can be manually removed once data has been moved out of the bucket. These behaviors are defined within the templates and can be customized.
 
-## Deploying services via the CLI
+Deploying services via the CLI
 
 Step 1:: Connect to the OpenShift cluster using the cli
+
 ----
 Connect to your Cloud 9 dev ui if you have not already done so.
 Connect to the workshop student landing page:
@@ -79,12 +85,14 @@ https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.ht
 ----
 
 Step 2 Create project
+
 ----
 oc new-project nativedb
 ----
 
 
 Step 3:: Deploy RDS database using the AWS Service Broker
+
 ----
 svcat provision mysql --class rdsmysql --plan custom  \
    -p PubliclyAccessible=true \
