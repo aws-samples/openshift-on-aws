@@ -78,6 +78,11 @@ sudo cp oc kubectl /usr/local/sbin
 oc login api.apps.demo-student1.egrsolutions.co.za:6443
 provide the username and password for the 
 https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
+
+curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
+chmod +x ./svcat
+sudo cp ./svcat /usr/local/bin/   
+
 ----
 
 *OpenShift cli docs*

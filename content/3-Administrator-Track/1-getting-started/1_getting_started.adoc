@@ -76,9 +76,17 @@ First we will download the oc client tools. These will then be used to connect t
 wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 tar -zxvf openshift-client-linux.tar.gz
 sudo cp oc kubectl /usr/local/sbin
+
+curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
+chmod +x ./svcat
+sudo cp ./svcat /usr/local/bin/ 
 oc login api.apps.demo-student1.egrsolutions.co.za:6443
 provide the username and password for the 
 https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
+
+curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
+chmod +x ./svcat
+sudo cp ./svcat /usr/local/bin/ 
 ----
 
 *OpenShift cli docs*
