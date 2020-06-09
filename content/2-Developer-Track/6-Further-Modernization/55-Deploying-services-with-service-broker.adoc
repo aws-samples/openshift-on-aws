@@ -10,7 +10,7 @@ weight = 4
 This module assumes that teh AWS Service Broker is installed and configured.
 If you have not already completed this, please complete the installing the service broker module under the administator track
 
-link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/1_installing-the-aws-service-broker.html[Installing the AWS Service Broker under the admin track]
+link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/55-deploying-services-with-service-broker.html[Installing the AWS Service Broker under the admin track]
 
 
 
@@ -68,44 +68,46 @@ Click on delete
 
 Deleting the project will remove all artifaces from OpenShift including the services provided by the AWS Service Broker. The broker will perform an API call to AWS CloudFormation to delete the stack, removing the AWS services provisioned out of band. To protect against data loss, certain resources will be retained. RDS will create a final snapshot of the database, S3 will retail the bucket in the account, this can be manually removed once data has been moved out of the bucket. These behaviors are defined within the templates and can be customized.
 
-Deploying services via the CLI
 
-Step 1:: Connect to the OpenShift cluster using the cli
+AWS RDS is a relational database service managed by AWS so customers focus on the database and not on the operational overhead. Scalable through simple API calls, resilience through multi AZ implementation.
+Lets provision an RDS instance.
 
-----
-Connect to your Cloud 9 dev ui if you have not already done so.
-Connect to the workshop student landing page:
-https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html [Student landing page]
-Find and expand your student number
-Follow the instructions to connect to your Cloud 9 developer IDE
-
-./oc login api.apps.lab3-student0.egrsolutions.co.za:6443
-provide the username and password for the 
-https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html
-----
-
-Step 2 Create project
+Step 4:: Create a project
 
 ----
-oc new-project nativedb
+Under the *developer* context
+expland advanced on the left
+expand projects
+click on create project
+create a project called *nativedb*
 ----
 
-
-Step 3:: Deploy RDS database using the AWS Service Broker
+Step 5:: Deploying an AWS RDS instance using the Broker
 
 ----
-svcat provision mysql --class rdsmysql --plan custom  \
-   -p PubliclyAccessible=true \
-   -p DBName=vote \
-   -p AccessCidr=0.0.0.0/0 \
-   -p MasterUsername=pricelist \
-   -p MasterUserPassword=pricelist \
-   -p MultiAZ=false \
-   -p DBInstanceClass=db.m4.large \
-   -p AutoMinorVersionUpgrade=false \
-   -p PortNumber=13306 \
-   -p BackupRetentionPeriod=0 
+Under the add menu select from catalog.
+Scroll down  to find Amazon RDS Mysql.
+Click create service instance
+Change the Service instance name to <YOUR STUDENT NUMBER S3>
+Select the developement plan
+Add a VPCID (Check with the workshop presenter is this is a specific one)
+Chege the Access CIDR to 10.0.0.0/8
+Click on create
 ----
+
+The provisioning will take a few minutes, typically 10 to 15 min, if a small instance type is selected this will take longer to provision. In this lab we have selected the developer plan as this will deploy a single AZ RDS instance to speed up the process during the lab. It is recommended that Multi AZ implementations are used for Prodcution workloads.
+
+
+Once the message has chnaged to :
+The instance was provisioned successfully
+
+Step 6:: Create a service Binding
+----
+change the name to rdsmysql-<STUDENTNUMBER>
+----
+
+In the next lab we will deploy an application which will connect to this database.
+The Service Binding will be used to bind the service to the front end application
 
 
 

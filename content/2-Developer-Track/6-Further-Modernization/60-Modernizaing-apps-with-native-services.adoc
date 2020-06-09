@@ -1,0 +1,107 @@
++++
+title = "Modernizing applications with native services"
+chapter = false
+weight = 5
++++
+
+
+:imagesdir: /images
+
+This module assumes that you have completed the lab for deploying services via the AWS Service Broker.
+link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/1_installing-the-aws-service-broker.html[Deploying native Services with the AWS Service Broker]
+
+
+
+Using the OpenShift Serice Catolog to deploy AWS service via a graphical interface.
+
+Step 1:: Connect to the OpenShift cluster using the cli
+
+----
+Connect to your Cloud 9 dev ui if you have not already done so.
+Connect to the workshop student landing page:
+https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html [Student landing page]
+Find and expand your student number
+Follow the instructions to connect to your Cloud 9 developer IDE
+
+./oc login api.apps.lab3-student0.egrsolutions.co.za:6443
+provide the username and password for the 
+https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html
+----
+
+Step 2:: change to the correct lab folder
+
+----
+cd openshift-on-aws/modules
+mkdir S2i
+cd S2i
+----
+
+Step 3:: Connect to the nativedb project
+
+----
+oc project nativedb
+----
+
+Step 4:: Deploy an app
+
+----
+oc new-app python:2.7~. --name vote-app --dry-run
+oc new-app python:2.7~. --name vote-app 
+oc start-build vote-app 
+oc expose svc vote-app
+oc get route
+----
+
+Step 5:: 
+
+Chage the student number to your student number
+
+----
+oc set env dc/vote-app \
+    --from=secret/rdsmysql-student0 \
+    DB_TYPE=mysql  
+----
+
+----
+oc set env --from=secret/rdsmysql-student0 dc/vote-app 
+----
+
+
+Step 7:: Test the application 
+
+To check the application is working you can either use curl or load the URL into your browser.
+
+Use curl to check the app is working:
+
+----
+curl http://vote-app-%project_namespace%.%cluster_subdomain%/ 
+----
+
+or use another way which checks for the expected output:
+
+---- 
+curl -s http://vote-app-%project_namespace%.%cluster_subdomain%/ | grep "<title>"
+----
+
+
+Step 6:: Clean up
+
+----
+oc delete project nativedb
+----
+
+Deleting the project will remove all OpenShift related resouces, if the project contains services provisioned by the AWS Service Broker these will be deleted as well. The AWS Service Broker will send an API call to AWS CloudFormation to delete the stack and all AWS Services will be removed out of band.
+
+In order to protect against data loss S3 buckets will remain in the account allowing for data to be retrieved and manual delete of the bucket.
+RDS will create a final snapshot of the database.
+The Service broker documentation details each resource that is retained.
+
+
+It is improtant to note that we have created a database using the AWS Service broker and changed the app to connect to it. This does not migrate any data in an existing database. In the event of moving from on premises to AWS, typically data would need to mograted as well.
+
+AWS data migration service can be used to migrate the data from the original source database to the new database on the cloud.
+link:https://aws.amazon.com/dms/[https://aws.amazon.com/dms/]
+
+If migrating to a different engine, Oracle to MySQL to AWS Aurora, the schema conversion tool can be used.
+link:https://aws.amazon.com/dms/schema-conversion-tool/[https://aws.amazon.com/dms/schema-conversion-tool/]
+https://aws.amazon.com/dms/schema-conversion-tool/
