@@ -9,9 +9,9 @@ weight = 2
 :imagesdir: /images
 
 
-As Buinesses attempt to modernize, much focus is places on maintaining agility. Part of this is via developer productivity and reduction of operational overhead, combined with a shift to the left. 
+As Businesses attempt to modernize, much focus is placed on maintaining agility. Part of this is via developer productivity and reduction of operational overhead, combined with a shift to the left. 
 
-Instead of infrastructure teams standing up required resources such as databases, the modern Dev team has the ability to deploy and manage these themselves. Hoever instead of Dev teams investing effort into building their own database and stroage solutions agaility can be gained by using existing building blocks.
+Instead of infrastructure teams standing up required resources such as databases, the modern Dev team has the ability to deploy and manage these themselves. However instead of Dev teams investing effort into building their own database and storage solutions agility can be gained by using existing building blocks.
 
 In this lab exercise we will learn how to use OpenShift Web Console to
 spin up a MySQL database using templates. We will then add a frontend
@@ -65,7 +65,7 @@ This will deploy a new pod running the database.
 
 ----
 Select tolopogy 
-Chage the project to * tenmpatelab*
+Chage the project to * templatelab*
 ----
 
 Here you can explore the running service.
@@ -104,7 +104,7 @@ service ip address you noted earlier, port number, username and password
 you used start the mysql client as shown below. You will have to
 substitute your values here.
 
-TIP: If you need service ip address navigate to *Applications->Services* tab on the Web Console.
+TIP: If you need service ip address navigate to *Application Services* tab on the Web Console.
 
 [source,sh]
 ----

@@ -8,7 +8,7 @@ weight = 5
 :imagesdir: /images
 
 This module assumes that you have completed the lab for deploying services via the AWS Service Broker.
-link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/1_installing-the-aws-service-broker.html[Deploying native Services with the AWS Service Broker]
+link:https://openshift4-on-aws.awsworkshop.io/2-developer-track/6-further-modernization/55-deploying-services-with-service-broker.html[Deploying native Services with the AWS Service Broker]
 
 
 

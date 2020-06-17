@@ -22,7 +22,6 @@ https://aws.amazon.com/cloud9/ [https://aws.amazon.com/cloud9/]
 ----
 Connect to the workshop student landing page:
 https://lab2-ignitionbucket-137e1h7z6m6h0.s3-us-west-2.amazonaws.com/workshop.html [Student landing page]
-
 Scroll down to Class Information
 Find and expand your student number click on it to expand.
 You will note three sections:
@@ -49,7 +48,7 @@ Step 2:: Download the lab .pem file
 This .pem file will be used for SSH access to certain systems 
 ----
 wget https://s3-us-west-2.amazonaws.com/redhat-workshops/keys/ocp-lab.pem
-chmod 600 opclablaunch.pem 
+chmod 600 opc-lab.pem 
 ----
 
 Step 3:: Clone the lab repo 
@@ -61,6 +60,8 @@ git clone https://github.com/aws-samples/openshift-on-aws.git
 ----
 
 Step 4:: Connecting to the OpenShift web console
+
+Please note that the end points and credentials will be different from the commands below.
 
 ----
 https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
@@ -76,17 +77,14 @@ First we will download the oc client tools. These will then be used to connect t
 wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
 tar -zxvf openshift-client-linux.tar.gz
 sudo cp oc kubectl /usr/local/sbin
-
-curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
-chmod +x ./svcat
-sudo cp ./svcat /usr/local/bin/ 
 oc login api.apps.demo-student1.egrsolutions.co.za:6443
 provide the username and password for the 
 https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
 
 curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
 chmod +x ./svcat
-sudo cp ./svcat /usr/local/bin/ 
+sudo cp ./svcat /usr/local/bin/   
+
 ----
 
 *OpenShift cli docs*
