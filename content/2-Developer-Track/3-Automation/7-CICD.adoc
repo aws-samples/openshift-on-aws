@@ -1,0 +1,150 @@
++++
+title = "CICD Pipelines"
+chapter = false
+weight = 7
++++
+
+
+
+:imagesdir: /images
+
+
+# CI/CD Defined
+In modern software projects many teams utilize the concept of Continuous Integration (CI) and Continuous Delivery (CD). By setting up a tool chain that continuously builds, tests, and stages software releases, a team can ensure that their product can be reliably released at any time. OpenShift can be an enabler in the creation and management of this tool chain.
+
+In this lab we walk through creating a simple example of a CI/CD [pipeline] utilizing Jenkins, all running on top of OpenShift! The Jenkins job will trigger OpenShift to build and deploy a test version of the application, validate that the deployment works, and then tag the test version into production.
+
+Step 1:: Create a new project
+
+
+Create a new project named cicd-<YOURNAME>.
+----
+oc new-project cicd-<YOURNAME>
+----
+
+
+
+
+Step 2:: Instantiate a Jenkins server in your project
+
+----
+oc new-app jenkins-ephemeral
+oc logs -f dc/jenkins
+----
+
+----
+--> Scaling jenkins-1 to 1
+--> Success
+----
+Wait for logs to return "Success".  Note: This may take awhile.
+
+Lets look at the same from the web console. You do not need to do this twice. This is just to show you the CLI and GUI Process
+
+----
+Login into the OpenShift web console
+Switch to the developer interface
+click add
+From catalog
+Filter on "Jenkins (Ephemeral).
+Select the Project cicd-<YOURNAME> from Namespace
+Click Create
+Go to Topology, select the deployment configuration for jenkins, under details ... wait to pod scales to 1.
+----
+
+
+
+image::ocp-developer-add.png[project]
+image::ocp-developer-add-template.png[project]
+image::ocp-lab-cicd-jenkins-instantiate.png[project]
+image::ocp-lab-cicd-jenkins-instantiate1.png[project]
+image::ocp-instantiate-template-button.png[project]
+image::ocp-lab-cicd-jenkins-instantiate2.png[project]
+image::ocp-lab-cicd-jenkins-instantiate3.png[project]
+image::ocp-create-button.png[project]
+image::ocp-lab-cicd-jenkins-instantiate4.png[project]
+image::ocp-lab-cicd-jenkins-instantiate-wait.png[project]
+
+
+
+Step 3::Create a sample application configuration
+
+
+----
+oc create -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
+----
+
+Step 4::Confirm you can access Jenkins
+
+Get the route to the Jenkins server. Your HOST/PORT values will differ
+from the example below.
+
+
+----
+oc get route
+----
+
+----
+NAME       HOST/PORT                            PATH      SERVICES   PORT      TERMINATION     WILDCARD
+frontend   frontend-cicd.192.168.42.27.xip.io             frontend   <all>     edge            None
+jenkins    jenkins-cicd.192.168.42.27.xip.io              jenkins    <all>     edge/Redirect   None
+----
+
+Use Jenkins HOST/PORT to access through web browser
+
+
+----
+In Developer mode, under Topology, 
+click the arrow, in the upper right corner of the jenkins icon
+Select "Login with OpenShift" from Jenkins login page
+----
+
+image::ocp-lab-cicd-jenkins-overview.png[project]
+image::ocp-lab-cicd-jenkins-login-1.png[project]
+
+
+The OpenShift login page is displayed in a new browser tab.
+
+----
+Login with your OpenShift user name and password
+----
+
+image::ocp-login.png[project]
+
+
+Step 5::Start the pipeline
+
+----
+Using the OpenShift Web Console, in Administrator mode, 
+choose Builds
+Select Build Configs
+click on nodejs-sample-pipeline
+From the Actions menu, choose Start Build
+----
+
+image::ocp-lab-cicd-start-pipeline.png[project]
+image::ocp-lab-cicd-pipeline-actions-start_build.png[project]
+
+When the pipeline starts, OpenShift uploads the pipeline to the Jenkins server for execution. 
+
+The Jenkins dashboard should indicate that a new build is executing.
+
+image::ocp-lab-cicd-jenkins-build-exec-status.png[project]
+
+Back in the OpenShift Web Console, watch the pipeline execute. 
+
+Step 6::Confirm application is available
+
+----
+In Developer mode, select the cicd-<YOURNAME> project, 
+and click on Topology
+Click on the arrow, at the upper right corner of the nodejs-mongodb6-example icon, to launch the web page
+----
+
+image::ocp-lab-cicd-jenkins-app-overview.png[project]
+image::ocp-launch-button.png[project]
+image::ocp-lab-cicd-app-test.png[project]
+
+# Summary
+In this lab you have very quickly and easily constructed a basic pipeline. 
+
+

@@ -1,5 +1,5 @@
 +++
-title = "Working with lables"
+title = "Labels "
 chapter = false
 weight = 6
 +++
@@ -7,6 +7,10 @@ weight = 6
 
 
 :imagesdir: /images
+
+
+
+
 
 # Labels
 This is a pretty simple lab, we are going to explore labels.  You can use labels to organize, group, or select API objects. 
@@ -16,16 +20,14 @@ For example, pods are "tagged" with labels, and then services use label selector
 ## Labels on a pod
 In a previous lab we added our web app using a S2I template.  When we did that, OpenShift labeled our objects for us.  Let's look at the labels on our running pod.
 
-{{< panel_group >}}
-{{% panel "CLI Steps" %}}
+Step 1:: See Current labels
 
-<blockquote>
-<i class="fa fa-terminal"></i> Goto the terminal and try the following:
-</blockquote>
+----
+oc get pods
+oc describe pod/<POD NAME> | grep Labels: --context=4
+----
 
-```bash
-$ oc get pods
-$ oc describe pod/<POD NAME> | grep Labels: --context=4
+----
 Namespace:    demo-1
 Priority:     0
 Node:         ip-10-0-132-38.us-east-2.compute.internal/10.0.132.38
@@ -35,24 +37,24 @@ Labels:       app=dc-metro-map
               pod-template-hash=7bc46bf89d
 Annotations:  k8s.v1.cni.cncf.io/networks-status:
                 [{
-```
+----
 
 You can see the Labels automatically added contain the app, deployment, and deploymentconfig.  Let's add a new label to this pod.
 
-<blockquote>
-<i class="fa fa-terminal"></i> Add a label
-</blockquote>
+Step 2:: Add a label
 
-```bash
-$ oc label pod/<POD NAME> testdate=4.14.2020 testedby=mylastname
-```
 
-<blockquote>
-<i class="fa fa-terminal"></i> Look at the labels
-</blockquote>
+----
+oc label pod/<POD NAME> testdate=4.14.2020 testedby=mylastname
+----
 
-```bash
-$ oc describe pod/<POD NAME> | grep Labels: --context=4
+Step 3:: Look at the labels
+
+----
+oc describe pod/<POD NAME> | grep Labels: --context=4
+----
+
+----
 Namespace:    demo-1
 Priority:     0
 Node:         ip-10-0-132-38.us-east-2.compute.internal/10.0.132.38
@@ -62,42 +64,45 @@ Labels:       app=dc-metro-map
               pod-template-hash=7bc46bf89d
               testdate=4.14.2020
               testedby=mylastname
-```
+----
 
-{{% /panel %}}
 
-{{% panel "Web Console Steps" %}}
+----
+Click "Workloads", 
+click on "Pods", 
+Click on the three vertical dots next to the "Running" pod.  
+Consider filtering for Status "Running".
+----
 
-<blockquote>
-Click "Workloads", click on "Pods", then click on the three vertical dots next to the "Running" pod.  Consider filtering for Status "Running".
-</blockquote>
 
-<img src="../images/ocp-lab-labels-pods.png" width="900"></br>
-</br>
+image::ocp-lab-labels-pods.png[project]
 
-<blockquote>
+
+----
 Click "Edit Labels"
-</blockquote>
-<img src="../images/ocp-lab-labels-poddetails.png" width="500"></br>
+Add 'testedby=mylastname'
+click "Save"
+----
+image::ocp-lab-labels-poddetails.png[project]
 Here, at the top, you can see the labels on this pod
 
-<blockquote>
-Add 'testedby=mylastname' and click "Save"
-</blockquote>
-<img src="../images/ocp-lab-labels-podedit.png" width="500"><br/>
+
+image::ocp-lab-labels-podedit.png[project]
 
 Your updated label will show up in the running pods.
 
-<blockquote>
-Select Workloads -> Pods -> dc-metro-map (Running POD), then scroll down to "Labels"
-</blockquote>
-<img src="../images/ocp-lab-labels-podedit3.png" width="900"><br/>
+----
+Select Workloads 
+select pods
+select dc-metro-map (Running POD), 
+then scroll down to "Labels"
+----
 
-{{% /panel %}}
-{{< /panel_group >}}
+image::ocp-lab-labels-podedit3.png[project]
+
+
 
 # Summary
 That's it for this lab. Now you know that all the objects in OpenShift can be labeled.  This is important because those labels can be used as part of your CI/CD process.  An upcoming lab will cover using labels for Blue/Green deployments. Labels can also be used for running your apps on specific nodes (e.g. just on SSD nodes or just on east coast nodes).  
 
 
-{{< importPartial "footer/footer.html" >}}
