@@ -9,7 +9,7 @@ weight = 7
 :imagesdir: /images
 
 
-# CI/CD Defined
+== CI/CD Defined
 In modern software projects many teams utilize the concept of Continuous Integration (CI) and Continuous Delivery (CD). By setting up a tool chain that continuously builds, tests, and stages software releases, a team can ensure that their product can be reliably released at any time. OpenShift can be an enabler in the creation and management of this tool chain.
 
 In this lab we walk through creating a simple example of a CI/CD [pipeline] utilizing Jenkins, all running on top of OpenShift! The Jenkins job will trigger OpenShift to build and deploy a test version of the application, validate that the deployment works, and then tag the test version into production.
@@ -144,7 +144,7 @@ image::ocp-lab-cicd-jenkins-app-overview.png[project]
 image::ocp-launch-button.png[project]
 image::ocp-lab-cicd-app-test.png[project]
 
-# Summary
+== Summary
 In this lab you have very quickly and easily constructed a basic pipeline. 
 
 
