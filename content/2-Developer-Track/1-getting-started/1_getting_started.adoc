@@ -48,7 +48,7 @@ Step 2:: Download the lab .pem file
 This .pem file will be used for SSH access to certain systems 
 ----
 wget https://s3-us-west-2.amazonaws.com/redhat-workshops/keys/ocp-lab.pem
-chmod 600 opc-lab.pem 
+chmod 600 ocp-lab.pem 
 ----
 
 Step 3:: Clone the lab repo 
