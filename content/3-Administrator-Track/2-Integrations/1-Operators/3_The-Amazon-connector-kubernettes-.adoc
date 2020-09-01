@@ -1,5 +1,5 @@
 +++
-title = "The AWS Service Operator"
+title = "Amazon controllers for Kubernettes"
 chapter = false
 weight = 3
 +++
@@ -14,12 +14,12 @@ Though some customer migrate application workloads to the cloud in a lift and sh
 
 More traditional enterprises have cloud centers of excellence which provision cloud services on behalf of other teams. As companies adopt of left to the left approach the desire for self service and developer / operator enablement increases. This can be catered for in many ways. Being able to manage this from within OpenShift provides agility through familiararity, a reduction on hat, context and interface switching. 
 
-The AWS Service Operator is an open source project allowing dev and ops teams to provision AWS services from within OpenShift using Kubernettes commands. The endpoints, and creds needed to consume these services are stored in the OpenShift secrets and can be bound to applications running in OpenShift.
+The Amazon controllers for Kubernettes is an open source project allowing dev and ops teams to provision AWS services from within OpenShift using Kubernettes commands. The endpoints, and creds needed to consume these services are stored in the OpenShift secrets and can be bound to applications running in OpenShift.
 
-https://aws.amazon.com/blogs/opensource/aws-service-operator-kubernetes-available/
-https://github.com/aws/aws-service-operator-k8s
+https://aws.amazon.com/blogs/containers/aws-controllers-for-kubernetes-ack/
+https://aws.github.io/aws-controllers-k8s/
 
-The AWS Service Operator has now been taken over by the AWS container service team and will be going through a complete redesign and will become a tier 1 Open Source Project.
+The Amazon controllers for Kubernettes has now been taken over by the AWS container service team and will be going through a complete redesign and will become a tier 1 Open Source Project.
 
 For dev and ops teams looking to manage AWS resources from within OpenShift itself this is certainly a project to keep track of.
 
