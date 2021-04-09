@@ -1,0 +1,45 @@
++++
+title = "What is Red Hat OpenShift Service on AWS"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+== Red Hat OpenShift Service on AWS:
+OpenShift has been available of AWS since 2015 is a self managed form via OpenShift container platform OCP.
+Red hat OpenShift Service on AWS was created in responce to customers providing the following feedback:
+
+1:: Managed instead of Self managed.
+Customers are looking for a managed OpenShift where they can take advantage of the developer productivity and abstractions provided by OpenShift however want someone to manage the day to day operation apsects, health and maintenance of OpenShift.
+For some customers being new to OpenShift or lacking technical skill set and resources may be a factor in seeking a managed offer. Other customers wish to focus their resources else where and would prefer to out source the management of OpenShift.
+
+Red Hat OpenShift Service on AWS is fully managed 24/7/365 by Red Hat SRE.
+
+2:: Better procurment and provisioning:
+Customers are looking for a simpler, faster purchasing and procurment process for Managed OpenShift. The ask was to be able to do this in the same fashion as other AWS services, by simple going to the AWS console. 
+
+Red Hat OpenShift Service on AWS is listed on the AWS console, customers can find it along with other container offers such as EKS and ECS, enable ROSA within their account and then use the ROSA CLI to kick off the automated providing of a ROSA cluster. Customers can be up and running within the hour without the need to interface with muyltiple stack holders.
+
+3:: Customers wanted consolidated billing:
+
+Red Hat OpenShift Service provides a unified billing experience, customers will see line items on their AWS bill for the under lying AWS resources such as EC2 compute, EBS volumes, Elastic load balancers and a Separate line item for the ROSA OpenShift Subscritpion.
+
+At this stage ROSA is not included in AWS pricing calculators. 
+https://aws.amazon.com/rosa/pricing/
+
+4:: Join support:
+Red Hat OpenShift Service on AWS is jointly supported. Customers have the choice of opening support tickets either with AWS premium support or with Red Hat support. Both Support teams have been trained and enabled to provide tier one and tier two support. Bothe support teams have excalation paths for teir three allowing the support teams to intereact with their adjacent counter parts instead of the customer needing to open multiple support tickets and interact with two sides. 
+
+It is recommended that ROSA customers have at least AWS business level support.
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,125 @@
++++
+title = "Create Cluster"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+### Using the ROSA CLI to provision a ROSA cluster
+
+Rosa create cluster can be used to deploy:
+* Single AZ clusters
+* Multi AZ clusters
+* Public clusters
+* Private clusters
+
+These are discussed in greater detail under the ROSA architecture topic.
+
+In this module we will look at a simple deployment of a ROSA cluster using the ROSA CLI.
+
+
+$rosa create cluster my-rosa-cluster
+
+Providing the cluster name with the create statement will simply build out a single AZ cluster with default settings.
+
+The default settings are as follows:
+
+* 3 Master Nodes, 2 Infra Nodes, 2 Worker Nodes
+* Worker node type: m5.xlarge
+* Region: As configured for the AWS CLI
+* The most recent version of OpenShift available to rosa
+* A single availability zone
+* Public cluster (Public API)
+
+$rosa create cluster 
+or
+$rosa create cluster -- interactive
+
+The rosa CLI will prompt for various questions such as is the cluster public, private, single or multi AZ, does it have autoscling etc.
+
+https://docs.openshift.com/rosa/rosa_cli/rosa-manage-objects-cli.html#rosa-create_rosa-managing-objects-cli
+
+### There are a few things that should be considered:
+* Multiple Availability Zones Y/N:
+Single AZ will deploy the entire OpenShift cluster control and data plane into the customer account, into a single AWS AZ, Master, Infrastrature and Worker nodes.
+Muliti AZ will deploy spanning 3 AZs placing 1 Master, 1 Infrastructure and 1 Worker in each AZ.
+This is recommended for production.
+
+* Install into an existing VPC Y/N:
+Selecting N the ROSA deploy process will create a new VPC, Subnets and all that is needed for the cluster. This will include routing tables IGW, NAT gateways. You will define the VPC CIDR in a later step. ^ subnets will be created 3 public and 3 private these will be equal sized. 
+
+Should you wish to have more granular control over the VPC address space, subnet sizing, etc it is recommended you deploy into an existing VPC.
+
+* Machine CIDR 10.0.0.0/16
+
+This is the IP address space for the AWS VPC, either existing or to be created. If deploying into an existing VPC ensure that this is updsted to reflect the VPC CIDR of the VPC being deployed into.
+
+* Service CIDR
+* POD CIDR
+
+The Service and POD CIDRs are private address spaces internal to OpenShift, these are used by the SDN. You can deploy multiple ROSA clusters and re-use these address spaces as they sit behind the routing layer within OpenShift and will not interal with the same address space on other clusters. This is similar to privite IP use in residentail homes, every comcast customer has a 10.0.0.0/16.
+
+It should how ever be noted that if the application workloads need to reach data sources and other services outside of OpenShift that the target address space should not over lap these address spaces. This will result in routing issues internal to OpenShift.
+
+* Host prefix 23 - 26
+
+The Host prefix has nothing to do with the AWS VPC. This takes the above POD CIDR and defines how this is divided across all of the underlying container hosts or Worker nodes. This will be a consideration linked to how many and how large are the instance types for the Worker nodes. 
+
+* Private Cluster Y/N
+
+Selecting public will allow application workloads running on the ROSA cluster to be accessable from the internet. Select private workloads can only be accessed from the VPC itself or via AWS direct connect or transit gateway to that VPC.
+
+At this stage (April 2021) this will only make the application workloads private!  
+
+
+
+
+Step 1: Create a multi AZ cluster 
+----
+rosa create cluster
+----
+
+Provide the following info:
+
+----
+Multi AZ : Y
+Existing VPC : N
+Compute node instance type : m5.xlarge
+enable autoscaling : y
+min replicas : 3
+max replicas : 3
+machine CIDR : default
+service CIDR : default
+Pod CIDR : default
+host prefix : default 
+private : N
+----
+
+image::create-cluster.gif[Create cluster]
+
+
+Step 2:: view clusters
+
+----
+rosa list clusters
+----
+
+This show a list of the ROSA clusters within the account as well their state (running, pending, installing)
+
+image::rosa-list-cluster.png[Create cluster]
+
+Step 3:: describe cluster
+
+----
+rosa decsribe cluster <name of the cluster>
+----
+
+At this stage you will see the cluster in a pending or installing state, this will take around 45min to complete.
+
+image::rosa-describe-cluster.png[Create cluster]
+
+
