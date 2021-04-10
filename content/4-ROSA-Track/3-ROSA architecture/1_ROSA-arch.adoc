@@ -1,0 +1,117 @@
++++
+title = "Architecture discussion"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+
+## ROSA Architecture
+
+ROSA being a managed solution translates to the implementation being pre configured for a small common set of use cases. Customers seeking a high degree of control and flexability may not find ROSA an ideal fit and should explore OpenShift Container platform OCP instead.
+
+This is not a Lab section but rather a technical discussion and deep dive into the various options for deploying ROSA and some of the realted considerations.
+
+
+### Common deployment components:
+
+All ROSA implementations will have 3 x Master node in order to cater for cluster quorum and to ensure propper fail over and resilience of OpenShift. At least 2 infrastructure nodes to ensure resilince of the OpenShift router layer which provides end use application access. A collection of AWS elastic load balancers, some of which will provide end user access to the OpenShift router layer, providing access to the application workloads running on OpenShift, other AWS elastic load balancers will expose end points used for cluster administration and managment by the SRE teams. 
+
+The OpenShift Master nodes cater for API end point for cluster administration and management, Controllers, and etcd.
+
+The OpenShift Infrastructure nodes cater for build in OpenShift container registry, OpenShift router layer and monitoring.
+
+ROSA clusters will require public and Private AWS VPC subnets per AZ. For Single AZ implementations two subnets will be required ( one public one private) for Multi AZ implementations six subnets will be needed (one public and one private per AZ).
+
+
+### Default deployment (Single AZ)
+
+----
+rosa create cluster <cluster name>
+----
+
+The default cluster config will deploy a basic ROSA cluster into a single AWS AZ, this will create a new VPC with two subnets ( one public and one private) within the same AZ. The OpenShift control plane and data plane i.e Masters, Infrastructure and Workers will all be placed into the same AZ in the private subnet.
+
+This is the simplest implementation and a good way to start playing with ROSA from a developer point of view. This implementation is not recommended for scale, resilience or production.
+
+image::rosa-arch-single.png[Rosa single arch] 
+
+### Multi AZ Cluster
+
+----
+rosa create cluster 
+or 
+rosa create cluster -- interactive
+or 
+
+----
+
+image::rosa-arch-multi-create.png[Rosa multi create]
+
+The multi AZ implementation will make use of three AWS AZs, with a public and private subnet in each AZ ( total of six subnets).
+If not deploying into an existing VPC the ROSA provisioning process will create a VPC to meets these requirements.
+
+Multi AZ implemenations will deploy 3 Master nodes, 3 Infrastructure nodes, spread across three AZs. This takes advantage of the resilince constructs of the AWS Multi AZ VPC design and combines it with the resilience model of OpenShift. 
+
+AWS Availability Zones are the closest construct AWS has to a traditional data center, it should however be noted that AWS AZs are made up of multiple physical datac centers. Each AZ is far enough apart so that any event impacting one AZ will not impact another. At the same time AZs are close enough to ensure that customers will not experience a performance difference between AZs.
+
+
+
+#### Subnet sizing and address spaces:
+
+When deploying ROSA there are three IP address CIDRs that warrent discussion:
+
+image::rosa-arch-cidr.png[Rosa multi create]
+
+* Machine CIDR 10.0.0.0/16
+
+This is the IP address space for the AWS VPC, either existing or to be created. If deploying into an existing VPC ensure that this is instead to reflect the VPC CIDR of the VPC being deployed into. If not deploying into an existing VPC the six subnets created will be the same size, equal divisions of the VPC or machine CIDR. It should be noted that there are not a large number of resources within the public subnets, mainly load balancers and NAT gateway interfaces.
+
+* Service CIDR
+* POD CIDR
+
+The Service and POD CIDRs are private address spaces internal to OpenShift, these are used by the SDN. You can deploy multiple ROSA clusters and re-use these address spaces as they sit behind the routing layer within OpenShift and will not interal with the same address space on other clusters. This is similar to privite IP use in residentail homes, every comcast customer has a 10.0.0.0/16.
+
+It should however be noted that if the application workloads need to reach data sources and other services outside of OpenShift that the target address space should not overlap these address spaces. This will result in routing issues internal to OpenShift.
+
+* Host prefix 23 - 26
+
+The Host prefix has nothing to do with the AWS VPC. This takes the above POD CIDR and defines how this is divided across all of the underlying container hosts or Worker nodes. This will be a consideration linked to how many and how large are the instance types for the Worker nodes. 
+
+
+### Deploying ROSA into an existing VPC
+
+Customers looking looking for more granular control of subnet address space sizing should consider creating the VPC and then deploying ROSA into an existing VPC. Customers who have business unit segregation where the platform owners who would be responcible for OpenShift are a different team from the infrastructure or cloud team deploying into an existing VPC may be ideal. 
+
+When deploying ROSA into an existing VPC, the installer will prompt for subnets to install into. The Installer will require six subnets (three public and three private). The installer at this stage simply allows you to select subnets froma list of subnet ids. It would be helpful if you document the subnet ids being deployed into.
+
+
+image::rosa-arch-existing.png[Rosa existing arch]
+
+
+### Public and Private ROSA clusters
+
+At this stage public and private ROSA cluster refer to where will the application workloads running on OpenShift be accessabile form.
+Selecting a public cluster will create an AWS internal classic load balancer which provides access to port 80 and 443 from within the VPC or via, peering, AWS direct connect or transit gateway. This internal Load balanacer has the Infrastructure nodes as targets and will forward to the OpenShift router layer. An additional public facing load balancer will allow for connections from the internet.
+
+Private clusters will not create the public facing load balancer only the internal one. Private clusters will still require public subnets ( which in tern will require an IGW, public route table and route to the internet via the IGW). This is required for the provisioning process to create the public facing AWS network load balancers which will provide access to the cluster for administrative and management by Red Hat SRE.
+
+At this stage the only difference between selecting public vs private is the creation of the public facing load balancer for access to the application workloads.
+
+ROSA will see changes to private clusters later in 2021 which will cater for private administration and management. This will see a private link infrastructure to enable SRE access.
+
+#### ROSA Private cluster 
+
+image::rosa-arch-private.png[Rosa private arch]
+
+#### ROSA Public cluster
+
+image::rosa-arch-multi.png[Rosa multi arch]
+
+### Multi Region
+
+The ROSA provisioning process like most AWS products and services does not provide a multi region deployment. Customer seeking multi region availablity will need to deploy separate clusters in each region. CICD pipelines and automation will need to be updated to deploy to the respective clusters. DNS name resolution will be used to resolve application URLs to the respective clusters and control failover. It is recommended that Amazon Route 53 form part of this design.
