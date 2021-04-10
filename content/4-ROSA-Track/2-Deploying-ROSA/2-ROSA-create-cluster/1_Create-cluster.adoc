@@ -115,11 +115,19 @@ image::rosa-list-cluster.png[Create cluster]
 Step 3:: describe cluster
 
 ----
-rosa decsribe cluster <name of the cluster>
+rosa decsribe cluster -c <name of the cluster>
 ----
 
 At this stage you will see the cluster in a pending or installing state, this will take around 45min to complete.
 
 image::rosa-describe-cluster.png[Create cluster]
+
+Once the cluster is completely provisioned it will reflect as a ready state in the describe output. 
+
+image::rosa-describe-cluster-ready.png[Create cluster]
+
+Note that once the cluster is ready, the describe output will also display the API and console endpoints. You can connnect to the API endpoint using the OpenShift CLI oc command, or connect to the console endpoint for a web console experience. you will first need to define an IDP or create admin users.
+
+image::oc-login-rosa.png[Create cluster]
 
 

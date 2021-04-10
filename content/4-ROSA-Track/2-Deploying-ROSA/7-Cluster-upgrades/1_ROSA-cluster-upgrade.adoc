@@ -1,0 +1,69 @@
++++
+title = "ROSA Cluster Upgrades"
+chapter = false
+weight = 1
++++
+
+:imagesdir: /images
+
+
+### Upgrading the cluster
+
+There are 3 ways to upgrade your cluster.
+
+ * Manually via the CLI
+ * Manually via the OCM UI
+ * Automated upgrades
+
+We will go through these three scenarios.
+
+### Manually via the CLI
+
+Step 1:: Check if there is an upgrade available by running the following command
+
+----
+rosa list upgrade -c <cluster-name>
+----
+
+You will get a list that shows the available version and the current version of your cluster.  For example:
+
+    	$ rosa list upgrade -c <cluster-name>
+    	VERSION  NOTES
+    	4.6.15   recommended
+    	4.6.13
+
+    In our example we see that version 4.6.13 is available and so is 4.6.15.
+
+Step 2:: Upgrade the cluster to the latest version by running
+
+----
+rosa upgrade cluster -c my-rosa-cluster --version 4.6.15
+----
+
+This will schedule the cluster for immediate upgrade.  It will take some time to complete.
+
+### Manually via OCM UI
+
+----
+To perform or upgrade via the UI log into OCM (<https://cloud.redhat.com/openshift>) and select the cluster you want to upgrade.
+Click on the “Update Settings” tab
+Click on the “Update” button
+----
+
+image::10-upgrade.png[Rosa init]
+	
+
+### Set up automatic updates
+
+----
+To set up your cluster to be updated automatically log into OCM (<https://cloud.redhat.com/openshift>) and select the cluster you want to upgrade.
+Click on the “Update Settings” tab.
+Under “Update Strategy” click the “Automatic” radio button.
+This will open up options for a day of the week and time that you can set for the update to occur.
+Select a “Grace period” for allowing the nodes to gracefully drain before forcing the pod eviction under “Node draining”.
+Click Save.
+----
+
+
+
+

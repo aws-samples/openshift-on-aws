@@ -1,0 +1,178 @@
++++
+title = "Configuring users and IDP"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+### Creating admin users:
+
+If you want to be able to access your cluster immediately and have a cluster-admin user you can follow these steps.  This is good if you need quick access to the cluster, though the recommended approach is to use a formal identity provider to access the cluster.
+
+
+Step 1:: Create an admin User
+
+----
+rosa create admin --cluster=my-rosa-cluster
+----
+
+    You will see a response like the following:
+
+        W: It is recommended to add an identity provider to login to this cluster. See 'rosa create idp --help' for more information.
+        I: Admin account has been added to cluster 'my-rosa-cluster'. It may take up to a minute for the account to become active.
+        I: To login, run the following command:
+        oc login https://api.my-rosa-cluster.abcd.p1.openshiftapps.com:6443 \
+        --username cluster-admin \
+        --password FWGYL-2mkJI-00000-00000
+
+Step 2:: Login using the oc command line tool        
+
+Copy the login command returned to you in the previous step and paste that into your terminal. This should log you into the cluster via the CLI so you can start using the cluster.
+
+----
+oc login https://api.my-rosa-cluster.abcd.p1.openshiftapps.com:6443 \
+        --username cluster-admin \
+        --password FWGYL-2mkJI-00000-00000
+----
+
+image::oc-login-rosa.png[Create cluster]
+        
+
+
+Step 3:: Check that you are logged in as the admin.
+
+----
+oc whoami
+----
+
+You should see something like:
+    
+        $ oc whoami
+        cluster-admin
+
+
+It is also recommended you read through the documentation and become familiar with cluster-admins and dedicated admins:
+https://docs.openshift.com/rosa/rosa_getting_started/rosa-accessing-cluster.html#rosa-create-cluster-admins
+
+Cluster-admins have full complete control over the cluster the same as the Red Hat SRE team managing ROSA. 
+It is recommended that as few as possible people have this access. 
+Dedicated admins have control over everyday funcations but have less permisions.
+
+
+Users can also be created via the OpenShift Cluster Manager OCM:
+
+Step 1:: login into OCM
+
+----
+open cloud.redhat.com in a browser
+Login with your Red Hat account
+Select cluster manager
+Select your ROSA Cluster
+Select access control
+Add user
+Select either dedicated or cluster admin
+----
+
+image::rosa-ocm-users.gif[Create cluster]
+
+### IDP configuration
+
+In a production world we will not all be logging in as admins, ideally we will configure an identidy provider.
+https://docs.openshift.com/rosa/rosa_getting_started/rosa-config-identity-providers.html
+
+We are going to run through enabling Github as an IDP
+
+#### Prerequisites:
+
+You will need a github account
+
+Step 1:: Create a github organization:
+
+----
+Log into your GitHub account
+Select organizations
+New organization
+Select the free plan
+Provide organization name and contact email
+Prove you are human to some degree
+click on next
+Create password
+----
+
+image::rosa-ocm-users.gif[Create cluster]
+
+Step 2:: Create the ROSA IDP
+
+----
+rosa create idp --cluster=<cluster name> --interactive
+----
+ 
+ Enter the following values that are in bold below:
+    
+    * Type of identity provider: **github**
+    * Identity Provider Name: **rosa-github** (Or this can be any name you choose)
+    * Restrict to members of: **organizations**
+    * GitHub organizations: **my-rosa-cluster** (or enter the name of your org)
+
+----
+The CLI will provide you with a link. Copy and paste that into a browser and press enter. This will pre fill the required information for you in order to register this application for OAuth. You don’t need to modify any of the information.
+Click "Register application
+On the next page it will show you a “Client ID”.  
+Copy this and paste it back into the terminal where it asks for “Client ID”. **DO NOT CLOSE THIS TAB.**
+The CLI now asks for a “Client Secret”.  So go back in your browser click on “Generate a new client secret” near the middle of the page towards the right.
+A secret will be generated for you. Make sure to copy it as it will never be visible again.
+Paste it into the terminal where the CLI is asking for the Client Secret and press enter.
+Leave "GitHub Enterprise Hostname" blank.
+Select “claim” (For more details see [Identity provider parameters](https://docs.openshift.com/container-platform/4.7/post_installation_configuration/preparing-for-users.html#identity-provider-parameters_post-install-preparing-for-users))
+Then the IdP will be created but can take up to 1 minute for the configuration to land onto your cluster.
+----
+    
+image::rosa-idp.gif[Create cluster]
+
+
+
+### Granting users access to the cluster
+In order to grant access to other users of your cluster you will need to add their GitHub user ID to the GitHub Organization used for this cluster.  If you are following the tutorial go to “Your organizations” page.
+
+----
+Click on your profile icon > Your organizations > {your organization name}.  In our case it is “my-rosa-cluster”.
+Click on the Invite someone button
+Enter their GitHub ID and select the correct one and click Invite.
+Once the other user accepts the invitation then they will be able to log into the ROSA cluster via the console link and use their GitHub credentials.
+----
+
+### Granting cluster-admin rights
+Cluster admin rights are not automatically granted to any new users that you add to the cluster.  If there are new users that you want to grant this level of privilege to you will need to manually add it to each user.  Let's start off with granting it to ourselves using the GitHub username we just created for the cluster. There are two ways to do this; either from the ROSA CLI or the OCM web UI.
+
+----
+rosa grant user cluster-admin --user <idp_user_name> --cluster=<cluster_name>
+----
+
+### Granting dedicated-admin
+ROSA has a concept of an admin user that can complete most administrative tasks but is slightly limited to prevent anything damaging.  It is called a dedicated-admin role.  It is best practice to use dedicated admin when elevated privileges are needed.  You can read more about it (https://docs.openshift.com/dedicated/4/administering_a_cluster/dedicated-admin-role.html).
+
+----
+rosa grant user dedicated-admin --user <idp_user_name> --cluster <cluster_name>
+----
+
+Enter the following command to verify that your user now has dedicated-admin access
+
+----
+oc get groups dedicated-admins
+----
+
+You can also grant dedicated-admin rights via the OCM UI as described in the cluster-admin section, but just select the **dedicated-admins** radio button instead.
+
+
+
+
+
+
+
+
+
+

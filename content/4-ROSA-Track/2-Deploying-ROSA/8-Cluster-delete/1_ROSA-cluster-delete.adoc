@@ -1,0 +1,37 @@
++++
+title = "ROSA cluster deletion"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+## Deleting a ROSA Cluster
+
+To delete a ROSA cluster follow the steps below.
+
+Step 1:: List the clusters 
+
+----
+rosa list clusters
+----
+
+Step 2:: Delete the cluster
+
+----
+rosa delete cluster -c <clustername>
+----
+
+It will prompt you to confirm that you want to delete it. Press “y” then enter. The cluster will be deleted and all associated infrastructure. **THIS IS NON-RECOVERABLE.**
+
+
+If you want to completely remove all associated aspects of the ROSA service (such as stack templates) you can run 
+
+----
+Update linkedin
+rosa init --delete-stack
+----
+
+

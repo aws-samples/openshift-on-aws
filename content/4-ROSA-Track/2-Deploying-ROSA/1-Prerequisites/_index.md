@@ -1,9 +1,9 @@
 +++
-title = "prerequisites"
+title = "Prerequisites"
 chapter = true
 weight = 1
 +++
 
-# prerequisites
+# Prerequisites
 
 {{% children showhidden="false" %}}
