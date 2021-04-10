@@ -1,115 +1,145 @@
 +++
-title = "Prerequisites"
+title = "Managing Nodes"
 chapter = false
 weight = 1
 +++
 
 
-
 :imagesdir: /images
 
+## Managing Worker Nodes
 
+When using your cluster there may be times when you need to change aspects of your worker nodes. Things like scaling, changing the type, adding labels or taints to name a few. Most of these things are done through the use of machine pools in ROSA. Think of a machine pool as a “template” for the kinds of machines that make up the worker nodes of your cluster. A machine pool allows users to manage many machines as a single entity.
 
-Step 1:: Review the prerequisites documentation
-https://docs.openshift.com/rosa/rosa_getting_started/rosa-aws-prereqs.html
+### Scaling worker nodes
 
-Step 2:: Create an AWS Account
+To scale the number of worker nodes we need to edit the machine pool they belong to. The default machine pool is called “default” which is created with every cluster.
 
-----
-Open https://portal.aws.amazon.com/billing/signup.
-Follow the online instructions.
-Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad.
-----
-
-Step 3:: Create a Red Hat account
+Step 1:: View existing machine pools:
 
 ----
-If you do not already have a Red Hat account, create one here https://cloud.redhat.com. Accept the required terms and conditions. Then check your email for a verification link.
+rosa list machinepools --cluster=<cluster-name>
 ----
 
-Step 4:: Create an IAM user
+    You will see a response like:
+
+        ID         AUTOSCALING  REPLICAS  INSTANCE TYPE  LABELS   TAINTS    AVAILABILITY ZONES
+        default    No           2         m5.xlarge                         us-east-1a
+
+Step 2:: Scale up the by adding additional nodes.
 
 ----
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+rosa edit machinepool --cluster=<cluster-name> --replicas <number-worker-nodes> <machinepool-name>
 ----
 
-Step 5:: Create SCP 
+    For example:
+
+    `rosa edit machinepool --cluster=my-rosa-cluster --replicas 3 default`
+
+Step 3:: Confirm scaling
 
 ----
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html
-https://docs.openshift.com/rosa/rosa_getting_started/rosa-aws-prereqs.html#rosa-minimum-spc_prerequisites
+rosa describe cluster --cluster=<cluster-name>
 ----
 
-Step 6:: Download, install and configure AWS CLI
+    You will see a response showing 3 compute nodes:
 
-https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
-https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
+        $ rosa describe cluster --cluster=my-rosa-cluster
+        Name:                       my-rosa-cluster
+        ID:                         1jgpoh4jm5jjiu12k12h000000000000
+        External ID:                a3fa460d-6405-48aa-ad24-000000000000
+        OpenShift Version:          4.7.2
+        Channel Group:              stable
+        DNS:                        my-rosa-cluster.abcd.p1.openshiftapps.com
+        AWS Account:                000000000000
+        API URL:                    https://api.my-rosa-cluster.abcd.p1.openshiftapps.com:6443
+        Console URL:                https://console-openshift-console.apps.my-rosa-cluster.abcd.p1.openshiftapps.com
+        Region:                     us-east-1
+        Multi-AZ:                   false
+        Nodes:
+         - Master:                  3
+         - Infra:                   2
+         - Compute:                 3 (m5.xlarge)
+        Network:
+         - Service CIDR:            172.30.0.0/16
+         - Machine CIDR:            10.0.0.0/16
+         - Pod CIDR:                10.128.0.0/14
+         - Host Prefix:             /23
+        State:                      ready 
+        Private:                    No
+        Created:                    Mar 19 2021 00:03:19 UTC
+        Details Page:               https://cloud.redhat.com/openshift/details/1jgpoh4jm5jjiu12k12h000000000000
 
-If you've just installed the AWS CLI or want to simply make sure it is using the correct AWS account, follow these steps in a terminal:
+image::7-describe.png[Rosa init]
+    
 
-----
-aws configure
-provide the AWS Access Key ID and press enter
-provide the AWS Secret Access Key and press enter
-provide default region you want to deploy into
-----
+This can also be confirmed by accessing OCM (<https://cloud.redhat.com/openshift>) and selecting the cluster, on the overview tab, scroll down to the middle section under details you will see Compute listing "3/3".
 
-It should look like the following as an example:
+image::7-ocm_cluster.png[Rosa init]
+    
+image::7-ocm_nodes.png[Rosa init]
 
-$ aws configure
-AWS Access Key ID: AKIA0000000000000000 
-AWS Secret Access Key: NGvmP0000000000000000000000000
-Default region name: us-west-2
-Default output format: table
-Verify the Configuration#
+This is a manual scaling action, either manually increasing or decreasing the number of worker nodes. See the AutoScaling module for info on how to enable dynamic scaling of compute resources.
 
 
-If you are making use of AWS cloud 9, Cloud 9 comes with the AWS CLI pre-installed, you will however need to run aws configure to update  and make sure that the credencials being used have the policies needed for ROSA and that you have the correct AWS region.
+### Adding node labels
 
-Step 7:: Download, install and configure ROSA CLI
-
-The ROSA CLI is a command line tool used to provision and manage Red Hat OpenShift clusters on AWS, this tool does not replace the more traditiona oc or kubectl commands for manageing OpenShift. The ROSA CLI will depend on and interact with the AWS CLI. Permissions needed for creating AWS resources such as VPCs, EC2 instances etc will be defined when configuring the AWS CLI in Step 6.
-
-You can download the latest version of the ROSA CLI fro you OS here:
-https://github.com/openshift/rosa/releases/tag/v1.0.2
-
-Linux instructions
-----
-wget https://github.com/openshift/rosa/releases/download/v1.0.2/rosa-linux-amd64
-chmod 755 rosa-linux-amd64
-sudo mv rosa-linux-amd64 /usr/local/bin/rosa
-----
+Node Lables allow for specific workloads to be placed in on certain nodes. This may be to place workloads on certain compute types such as GPU. This can also be helpful for performance sensitive workloads ensuring they run in same hosts.  We can create a new machine pool to add the node labels to the worker nodes created by it.
 
 
-Step 8:: download and install oc 
-
-----
-rosa download oc
-ls
-tar zxvf openshiftxxxx
-chmod 755 oc 
-sudo mv oc /usr/local/bin/
-----
-
-Step 9:: Enable the ROSA service
+Step 1:: Create machinepool with a label.
 
 ----
-Go to the AWS ROSA console home
-console.aws.amazon.com/rosa/home
-Click on the Enable ROSA button
+rosa create machinepool --cluster=<cluster-name> --name=<mp-name> --replicas=<number-nodes> --labels=’<key=pair>
 ----
 
-image::enable-rosa.gif[Rosa console]
 
+    For example:
 
-Step 10:: ROSA init
+        $ rosa create machinepool --cluster=my-rosa-cluster --name=db-nodes-mp --replicas=2 --labels='app=db','tier=backend'
+        I: Machine pool 'db-nodes-mp' created successfully on cluster 'my-rosa-cluster'
+        
+    This will create an additional 2 nodes that can be managed as one unit and also assign them the labels shown.  
 
-ROSA init will run through several steps, it launch a CloudFormation infrastructure as code stack which creates an IAM user within the account. It will validate if the correct SCP permisions are in place, check AWS service limits such as VPC, EC2 instances, EIPS. Check if the ROSA service has been enabled.  Rosa init will link to your Red Hat accout. ROSA init need only be run once within the account and each of these steps can be run separately however I find it faster to simply process the init and have it do everything for me. 
+Step 2:: Confirm labels
 
 ----
-rosa init
+rosa list machinepools --cluster=<cluster-name>
 ----
 
-image::rosa-init.gif[Rosa init]
+image::7-new_mp.png[Rosa init]
+	
+
+### Using different node types
+
+You cannot change the node type of a machine pool once created, but we can create a new machine pool with the larger nodes by adding the `--instance-type` flag.
+
+
+Step 3:: Create machine pool 
+
+    ----
+    rosa create machinepool --cluster=<cluster-name> --name=<mp-name> --replicas=<number-nodes> --labels=’<key=pair>’ --instance-type=<type>
+    ----
+
+	For example:
+	
+    `rosa create machinepool --cluster=my-rosa-cluster --name=db-nodes-large-mp --replicas=2 --labels='app=db','tier=backend' --instance-type=m5.2xlarge`
+
+
+If you’d like to see all the [instance types available](https://docs.openshift.com/rosa/rosa_policy/rosa-service-definition.html#rosa-sdpolicy-aws-compute-types_rosa-service-definition), or to make the decisions step-by-step, then use the `--interactive` flag:
+
+Step 4:: Create machinepool interactive mode
+
+----
+rosa create machinepool -c <cluster-name> --interactive
+----
+   
+
+image::7-mp_interactive.png[Rosa init]
+    
+
+1. List the machine pools to see the new larger instance type
+
+image::7-large_mp.png[Rosa init]
+
 

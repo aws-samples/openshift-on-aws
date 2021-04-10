@@ -4,112 +4,67 @@ chapter = false
 weight = 1
 +++
 
-
-
 :imagesdir: /images
 
 
+## Autoscaling
 
-Step 1:: Review the prerequisites documentation
-https://docs.openshift.com/rosa/rosa_getting_started/rosa-aws-prereqs.html
+Autoscaling can refer to two things:
+The scaling of application workloads by Kubernetes by deploying additional pods.
+This is controlled by the Horizontal Pod Autoscaler
+https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/ 
 
-Step 2:: Create an AWS Account
+The Pod AutoScaler can only scale within the confined of the underlying compute resources available.
 
-----
-Open https://portal.aws.amazon.com/billing/signup.
-Follow the online instructions.
-Part of the sign-up procedure involves receiving a phone call and entering a verification code on the phone keypad.
-----
+Moving to AWS customers can combine this with AutoScaling of the underlying infrastructure.
+This is managed by the Cluster Autoscaler.  
+This allows worker nodes will be added or removed from the cluster based on pods failing due to insufficient resources thereby affecting the total number of resources available.
 
-Step 3:: Create a Red Hat account
+We will focus on the second as it relates to ROSA.
 
-----
-If you do not already have a Red Hat account, create one here https://cloud.redhat.com. Accept the required terms and conditions. Then check your email for a verification link.
-----
+Cluster autoscaling can be enabled at deployment time using the `--enable-autoscaling` flag.
 
-Step 4:: Create an IAM user
+### Setting up cluster autoscaling
 
-----
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
-----
-
-Step 5:: Create SCP 
+Step 1:: List available machine pools
 
 ----
-https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html
-https://docs.openshift.com/rosa/rosa_getting_started/rosa-aws-prereqs.html#rosa-minimum-spc_prerequisites
+rosa list machinepools -c <cluster-name>
 ----
 
-Step 6:: Download, install and configure AWS CLI
+	You will see a response like:
 
-https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
-https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
+        ID         AUTOSCALING  REPLICAS  INSTANCE TYPE  LABELS     TAINTS    AVAILABILITY ZONES
+        default    No           2         m5.xlarge                           us-east-1a
 
-If you've just installed the AWS CLI or want to simply make sure it is using the correct AWS account, follow these steps in a terminal:
+You will note that the above pool does not have autoscaling enabled.
 
-----
-aws configure
-provide the AWS Access Key ID and press enter
-provide the AWS Secret Access Key and press enter
-provide default region you want to deploy into
-----
-
-It should look like the following as an example:
-
-$ aws configure
-AWS Access Key ID: AKIA0000000000000000 
-AWS Secret Access Key: NGvmP0000000000000000000000000
-Default region name: us-west-2
-Default output format: table
-Verify the Configuration#
-
-
-If you are making use of AWS cloud 9, Cloud 9 comes with the AWS CLI pre-installed, you will however need to run aws configure to update  and make sure that the credencials being used have the policies needed for ROSA and that you have the correct AWS region.
-
-Step 7:: Download, install and configure ROSA CLI
-
-The ROSA CLI is a command line tool used to provision and manage Red Hat OpenShift clusters on AWS, this tool does not replace the more traditiona oc or kubectl commands for manageing OpenShift. The ROSA CLI will depend on and interact with the AWS CLI. Permissions needed for creating AWS resources such as VPCs, EC2 instances etc will be defined when configuring the AWS CLI in Step 6.
-
-You can download the latest version of the ROSA CLI fro you OS here:
-https://github.com/openshift/rosa/releases/tag/v1.0.2
-
-Linux instructions
-----
-wget https://github.com/openshift/rosa/releases/download/v1.0.2/rosa-linux-amd64
-chmod 755 rosa-linux-amd64
-sudo mv rosa-linux-amd64 /usr/local/bin/rosa
-----
-
-
-Step 8:: download and install oc 
+Step 2:: enable autoscaling
 
 ----
-rosa download oc
-ls
-tar zxvf openshiftxxxx
-chmod 755 oc 
-sudo mv oc /usr/local/bin/
+rosa edit machinepool -c <cluster-name> --enable-autoscaling <machinepool-name> --min-replicas=<num> --max-replicas=<num>
 ----
 
-Step 9:: Enable the ROSA service
-
+    For example:
 ----
-Go to the AWS ROSA console home
-console.aws.amazon.com/rosa/home
-Click on the Enable ROSA button
+$ rosa edit machinepool -c my-rosa-cluster --enable-autoscaling default --min-replicas=2 --max-replicas=4
 ----
 
-image::enable-rosa.gif[Rosa console]
+    This will create an autoscaler for the worker nodes to scale between 2 and 4 nodes depending on the resources. 
+
+    The cluster autoscaler increases the size of the cluster when there are pods that failed to schedule on any of the current nodes due to insufficient resources or when another node is necessary to meet deployment needs. The cluster autoscaler does not increase the cluster resources beyond the limits that you specify. The cluster autoscaler decreases the size of the cluster when some nodes are consistently not needed for a significant period, such as when it has low resource use and all of its important pods can fit on other nodes.
 
 
-Step 10:: ROSA init
+ Step 3:: Confirm Autoscaling
 
-ROSA init will run through several steps, it launch a CloudFormation infrastructure as code stack which creates an IAM user within the account. It will validate if the correct SCP permisions are in place, check AWS service limits such as VPC, EC2 instances, EIPS. Check if the ROSA service has been enabled.  Rosa init will link to your Red Hat accout. ROSA init need only be run once within the account and each of these steps can be run separately however I find it faster to simply process the init and have it do everything for me. 
+ ----
+ rosa list machinepools -c <cluster-name>
+ ----
 
-----
-rosa init
-----
+    You will see a response like:
 
-image::rosa-init.gif[Rosa init]
+        ID         AUTOSCALING  REPLICAS  INSTANCE TYPE  LABELS     TAINTS    AVAILABILITY ZONES
+        default    Yes          2-4       m5.xlarge                           us-east-1a
+
+
 
