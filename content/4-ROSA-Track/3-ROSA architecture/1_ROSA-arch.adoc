@@ -12,7 +12,7 @@ weight = 1
 
 ## ROSA Architecture
 
-ROSA being a managed solution translates to the implementation being pre configured for a small common set of use cases. Customers seeking a high degree of control and flexibility may not find ROSA an ideal fit and should explore OpenShift Container platform OCP instead.
+ROSA being a managed solution translates to the implementation being pre-configured for a small common set of use cases. Customers seeking a high degree of control and flexibility may not find ROSA an ideal fit and should explore OpenShift Container platform OCP instead.
 
 This is not a Lab section but rather a technical discussion and deep dive into the various options for deploying ROSA and some of the related considerations.
 
@@ -95,7 +95,7 @@ image::rosa-arch-existing.png[Rosa existing arch]
 
 ### Public and Private ROSA clusters
 
-At this stage public and private ROSA cluster refer to where will the application workloads running on OpenShift be accessabile form.
+At this stage public and private ROSA cluster refer to where will the application workloads running on OpenShift be accessible form.
 Selecting a public cluster will create an AWS internal classic load balancer which provides access to port 80 and 443 from within the VPC or via, peering, AWS direct connect or transit gateway. This internal Load balancer has the Infrastructure nodes as targets and will forward to the OpenShift router layer. An additional public facing load balancer will allow for connections from the internet.
 
 Private clusters will not create the public facing load balancer only the internal one. Private clusters will still require public subnets ( which in tern will require an IGW, public route table and route to the internet via the IGW). This is required for the provisioning process to create the public facing AWS network load balancers which will provide access to the cluster for administrative and management by Red Hat SRE.
@@ -111,6 +111,11 @@ image::rosa-arch-private.png[Rosa private arch]
 #### ROSA Public cluster
 
 image::rosa-arch-multi.png[Rosa multi arch]
+
+### Shared VPC
+
+https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html
+At this stage ROSA does not support deployment into a shared VPC. 
 
 ### Multi Region
 
