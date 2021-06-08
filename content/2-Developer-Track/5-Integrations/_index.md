@@ -20,3 +20,7 @@ Take advantage of agility through familiarity, allow developers and operators to
 Reduce technical ramp up time, through prescritive consumables allowing teams to build out AWS Services providing a limited number of inputs. 
 
 In the following sections we will explore various integrations which allow OpenShift users to manage, deploy and consume native AWS Services.
+
+
+[Watch with short video on integrations](https://pages.awscloud.com/apn-tv-aws-partner-webinars-ep-125.html "Integrations for Native Service Adoption")
+

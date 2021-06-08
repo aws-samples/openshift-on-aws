@@ -9,11 +9,15 @@ weight = 1
 
 image::SB.gif[project]
 
+image::ASB.png[project]
+
+
 The AWS service broker is is an open source project it allows for dev and ops teams to provision AWS native resources and expose these to appllication worksloads from within OpenShift.
 
 https://aws.amazon.com/partners/servicebroker/
 
-The Service broker is build on the open service broker API.
+
+The Service broker is build on the open service broker API, this predates Kubernettes Operators. Though the AWS service Broker can be deployed on OpenShift 3 and early versions of OpenShift 4 it is recommended that customers consider the Amazon Controller for Kubernettes instead. The AWS Service broker may be a good fit for customers running OpenShift 3. The AWS Service Broker has a dependancy on the Kubnernettes Service Catalog which is no longer supported post OpenShift 4.5.  
 
 The broker makes use of prescritive infrastructure as code templates (CloudFormation) to build out the AWS resource.
 Devs can select the desired AWS service from within OpenShift, select a plan which is a prebuild grouping of parameters, add a limited number of required parameters and build out an AWS resources. 
@@ -39,9 +43,7 @@ Applications consuming services simply need to point to well-known environment v
 
 Customers can add their own solutions through the service broker by using their own custom catalogs:
 
-https://aws.amazon.com/blogs/opensource/building-own-service-broker-services/
 
-https://aws.amazon.com/blogs/opensource/aws-service-broker-govcloud/
 
 
 
