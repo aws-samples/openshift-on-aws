@@ -1,0 +1,24 @@
++++
+title = "The Amazon Controller for Kubernettes"
+chapter = false
+weight = 3
++++
+
+
+:imagesdir: /images
+
+
+Over the paste few years there has been a clear shift away from Open Service Broker APIs towords Kubernettes Operators. So much so that much of OpenShift has been replaced with operators under the hood. 
+
+The Amazon controler for Kubernettes an open source project allowing dev and ops teams to provision AWS services from within OpenShift using Kubernettes commands. The endpoints, and creds needed to consume these services are stored in the OpenShift secrets and can be bound to applications running in OpenShift.
+
+image::ACK.png[project]
+image::ACK.gif[project]
+
+
+https://aws.amazon.com/blogs/containers/aws-controllers-for-kubernetes-ack/
+https://aws.amazon.com/about-aws/whats-new/2020/08/announcing-the-aws-controllers-for-kubernetes-preview/
+https://github.com/aws-controllers-k8s/community
+
+
+
