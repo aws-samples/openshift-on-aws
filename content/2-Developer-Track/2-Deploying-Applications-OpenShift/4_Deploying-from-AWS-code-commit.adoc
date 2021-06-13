@@ -16,9 +16,9 @@ Step 1:: Deploy a code commit repo
 We are going to infrastructure as code to create the code commit repo. The template can be found within the resources folder of the workshop you cloned in the getting started step. We will deploy this CloudFormation stack using the AWS CLI. Please update the --stack-name with your Student or attendee number for the workshop. 
 
 ----
-cd ~/environment/openshift-on-aws/app
+cd ~/environment/openshift-on-aws/resources/
 
-aws cloudformation create-stack --stack-name student<YOURSTUDENTNUMER>codecommit --RepositoryName student<YOURSTUDENTNUMER>repo --template-body file://CodeCommitCFN.yaml --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name student<YOURSTUDENTNUMER>codecommit --template-body file://CodeCommitCFN.yaml --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=RepositoryName,ParameterValue=student<YOURSTUDENTNUMER>repo
 
 until [[ `aws cloudformation describe-stacks --stack-name "student<YOURSTUDENTNUMER>codecommit" --query "Stacks[0].[StackStatus]" --output text` == "CREATE_COMPLETE" ]]; do  echo "The stack is NOT in a state of CREATE_COMPLETE at `date`";   sleep 30; done && echo "The Stack is built at `date` - Please proceed"
 ----
@@ -32,11 +32,14 @@ We will query the above CloudFormation stack to get the outputs which contain th
 aws cloudformation describe-stacks --stack-name student<YOURSTUDENTNUMER>codecommit
 ----
 
+image::codecommitcfnlaunch.gif[project]
 
 Step 3:: Clone the repo
 
 Use the CloneUrlHttp in the above output to clone your repo.
 ----
+cd ~/environment/
+
 git clone https://git-codecommit.us-west-2.amazonaws.com/v1/repos/student0jun11 
 ----
 
@@ -55,10 +58,13 @@ git commit -m "Added initial repo"
 git push origin
 ----
 
+image::codecommitclone.gif[project]
+
+
 Step 6:: Log into the OpenShift web console
 
 ----
-This is the same process covered in the gettinf started module:
+This is the same process covered in the getting started module:
 ----
 
 Step 7:: Create a project
@@ -86,6 +92,9 @@ Select Create new Secret from the Source Secret drop-down.
 Enter a name for Secret Name and choose Basic Authentication  for Authentication Type from the drop-down. 
 Enter AWS CodeCommit Git credential username and password  in the respective fields, choose Create.
 ----
+
+image::addrepo.gif[project]
+
 
 Step 9:: View application deployment
 
