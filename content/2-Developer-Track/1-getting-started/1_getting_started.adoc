@@ -9,8 +9,13 @@ weight = 1
 :imagesdir: /images
 
 
-In this module we will explore connecting through a cloud 9 developer IDE.
-We will explore the OpenShift CLI and web console interfaces 
+In this module we will discuss connecting to your lab environment. Parts of the Lab will make use of GUI web based console and others CLI. 
+
+The following video will run through how to connect to both. The steps which follow also discuss this in a step by step process.
+It is recommended you take 8 min and watch the video.
+
+
+https://vimeo.com/553445770/cd7ef9932f [Watch this short video on how to connect to you lab]
 
 
 Step 1:: Connecting to you AWS Cloud 9 developement environment:
@@ -43,15 +48,7 @@ Click on launch IDE
 
 ----
 
-Step 2:: Download the lab .pem file 
-
-This .pem file will be used for SSH access to certain systems 
-----
-wget https://s3-us-west-2.amazonaws.com/redhat-workshops/keys/ocp-lab.pem
-chmod 600 ocp-lab.pem 
-----
-
-Step 3:: Clone the lab repo 
+Step 2:: Clone the lab repo 
 
 This repo will contain all the files, scripts, templates needed for the labs. The Resources folder also contains presentation material.
 
@@ -59,7 +56,7 @@ This repo will contain all the files, scripts, templates needed for the labs. Th
 git clone https://github.com/aws-samples/openshift-on-aws.git
 ----
 
-Step 4:: Connecting to the OpenShift web console
+Step 3:: Connecting to the OpenShift web console
 
 Please note that the end points and credentials will be different from the commands below.
 
@@ -69,16 +66,20 @@ https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
 
 https://docs.openshift.com/container-platform/4.2/web-console/web-console.html
 
-Step 5:: Connecting to OpenShift using the CLI
+Step 4:: Connecting to OpenShift using the CLI
 
 First we will download the oc client tools. These will then be used to connect to the OpenShift Cluster as well as perform command line functions in various labs.
 
 ----
 wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+
 tar -zxvf openshift-client-linux.tar.gz
+
 sudo cp oc kubectl /usr/local/sbin
+
 oc login api.apps.demo-student1.egrsolutions.co.za:6443
 provide the username and password for the 
+
 https://<WORKSHOPID>.s3-us-west-2.amazonaws.com/workshop.html
 
 curl -sLO https://download.svcat.sh/cli/latest/linux/amd64/svcat
@@ -120,11 +121,7 @@ View the projects (namespaces) you have access to:
 oc projects
 ----
 
-Feeling brave? This will make you famous?
 
-----
-oc cluster down -F & ./update-resume.sh
-----
 
 *developer cli commands*
 https://docs.openshift.com/container-platform/4.2/cli_reference/openshift_cli/developer-cli-commands.html 

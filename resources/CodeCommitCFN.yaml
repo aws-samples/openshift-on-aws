@@ -1,0 +1,24 @@
+
+Description: 'AWS Code Commit repo for OpenShift on AWS Workshop'
+
+Parameters:
+  RepositoryName:
+    Type: String
+    
+Resources:
+  MyRepo:
+    Type: AWS::CodeCommit::Repository
+    
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      RepositoryDescription: OCP workshop code commit repo
+
+Outputs:
+  Arn:
+    Value:  !GetAtt MyRepo.Arn      
+  
+  CloneUrlHttp:
+    Value:  !GetAtt MyRepo.CloneUrlHttp
+
+  CloneUrlssh:
+    Value:  !GetAtt MyRepo.CloneUrlSsh
