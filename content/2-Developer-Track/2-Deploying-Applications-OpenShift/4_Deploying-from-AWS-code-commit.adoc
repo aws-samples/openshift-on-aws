@@ -8,7 +8,7 @@ weight = 4
 :imagesdir: /images
 
 
-Applications can be deployed from a variety fo locations. Developer commonly storing application code and configurations within a source code repository such as GIT. With customers adopting more and more AWS native services it is ot unusual to see code being stored in AWS code commit. In this module we will explore creating an AWS code commit repo, interacting with it using GIT tools as well as deploying workloads from it to OpenShift
+Applications can be deployed from a variety fo locations. Developer commonly storing application code and configurations within a source code repository such as GIT. With customers adopting more and more AWS native services it is not unusual to see code being stored in AWS code commit. In this module we will explore creating an AWS code commit repo, interacting with it using GIT tools as well as deploying workloads from it to OpenShift
 
 
 Step 1:: Deploy a code commit repo
