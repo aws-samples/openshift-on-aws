@@ -1,0 +1,79 @@
++++
+title = "Deploying native Services with the AWS Service Catalog"
+chapter = false
+weight = 3
++++
+
+
+:imagesdir: /images
+
+This module assumes that that an AWS Service Catalog portfolio has been created and products provided.
+If you have not already completed this, please complete AWS Service Catalog module under the administator track.
+
+
+Once an AWS Service Catalog portfolio and products have been created AWS Service catalog end users are able to go to the Service catalog console web console and see a list of products they are able to deploy.
+
+Service Catalog users have different options from Service Catalog admins. The admin experience such as creating portfolios, adding products, controlling who is able to launch products etc is covered under the administrator track.
+
+In this module we will focus on the the developer experience of interacting with service catalog as an end user.
+
+Step 1:: Connect to the AWS Servcie Catalog web console:
+
+----
+Open the link to the AWS Cloud 9 console as described in the getting started section, this is the same page where you would have clicked on launch ide for your cloud 9 instance.
+
+on the top left click on the services drop down menu 
+
+Search for Service Catalog
+
+right click on Service Catalog and open it in a new browser tab.
+
+----
+
+Step 2:: exploring the Service catalog end user console
+
+As stated above users have fewer options, they have the ability to see the products available to them. Depending on the launch contraints defined by admins, they can launch these products into an AWS account.
+
+
+----
+On the left click on products
+----
+
+This will show you a list of all the products available to you for launch.
+
+
+Step 3:: Create a DynamoDB table using AWS service catalog
+
+----
+Click on products
+
+select DynamoDB from the product list
+----
+
+
+Step 4:: create a Amazon S3 bucket using AWS Service Catalog
+
+----
+click on products
+
+Select S3 from the product list
+
+
+----
+
+Step 5 :: View provision products
+
+----
+Click on provisioned products on the left.
+
+Click on one of the provision products 
+
+Scroll down to the outputs
+
+----
+
+At this stage AWS Service Catalog does not directly integrate with application platforms. In this case application owners will need to collect the information needed to consume AWS services and go back to OpenShift and create an OpenShift Service or application environment variable mapping. Once this is done they can bind these to the applications which will interact with AWS services.
+
+
+
+

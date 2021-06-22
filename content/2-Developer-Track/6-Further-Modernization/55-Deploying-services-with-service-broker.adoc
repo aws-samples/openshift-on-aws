@@ -7,7 +7,7 @@ weight = 4
 
 :imagesdir: /images
 
-This module assumes that teh AWS Service Broker is installed and configured.
+This module assumes that the AWS Service Broker is installed and configured.
 If you have not already completed this, please complete the installing the service broker module under the administator track
 
 link:https://openshift4-on-aws.awsworkshop.io/3-administrator-track/2-integrations/2-aws-service-broker/55-deploying-services-with-service-broker.html[Installing the AWS Service Broker under the admin track]
