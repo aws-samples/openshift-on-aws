@@ -61,13 +61,34 @@ git push origin
 image::codecommitclone.gif[project]
 
 
-Step 6:: Log into the OpenShift web console
+Step 6:: Clone an application to use
+----
+cd ~/environment/
+
+git clone https://github.com/RedHatGov/openshift-workshops.git
+----
+
+Step 7:: copy the code to your local code commit repo
+----
+cd openshift-workshops
+
+mv *.* ../<YOUR REPONAME IN STEP 3>
+
+git add .
+
+git commit -m "added app"
+
+git push origin
+----
+
+
+Step 7:: Log into the OpenShift web console
 
 ----
 This is the same process covered in the getting started module:
 ----
 
-Step 7:: Create a project
+Step 8:: Create a project
 
 ----
 Under the *developer* context
@@ -78,7 +99,7 @@ create a project called *myproject*
 
 ----
 
-Step 8:: Deploy application from AWS Code commit
+Step 9:: Deploy application from AWS Code commit
 
 We are going to deploy an application from GIT and add the details for the AWS code commit repo
 
@@ -96,7 +117,7 @@ Enter AWS CodeCommit Git credential username and password  in the respective fie
 image::addrepo.gif[project]
 
 
-Step 9:: View application deployment
+Step 10:: View application deployment
 
 ----
 Under Resources, select DeploymentConfig, and select Create.
@@ -104,8 +125,4 @@ This will automatically start building the application.
 After a successful build, the S2I tool will automatically deploy the container application into the project you selected.
 Select the application that was just deployed and click on the application to open the details page as shown below.
 ----
-
-
-
-
 
