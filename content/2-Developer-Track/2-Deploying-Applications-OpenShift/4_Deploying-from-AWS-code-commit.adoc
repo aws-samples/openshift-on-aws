@@ -46,33 +46,24 @@ git clone https://git-codecommit.us-west-2.amazonaws.com/v1/repos/student0jun11
 The first time you connect, you will be prompted for the username and password for the repository. Enter the username and password generated for git credentials in IAM 
 
 
-Step 4:: initialize the repo with the first commit
-
-----
-git add .
-
-
-git commit -m "Added initial repo"
-
-
-git push origin
-----
 
 image::codecommitclone.gif[project]
 
 
-Step 6:: Clone an application to use
+Step 4:: Clone an application to use
 ----
 cd ~/environment/
 
 git clone https://github.com/RedHatGov/openshift-workshops.git
 ----
 
-Step 7:: copy the code to your local code commit repo
+Step 5:: copy the code to your local code commit repo
 ----
 cd openshift-workshops
 
 mv *.* ../<YOUR REPONAME IN STEP 3>
+
+cd ../<YOUR REPO NAME IN STEP 3>.
 
 git add .
 
@@ -112,6 +103,19 @@ Select Show advanced and enter the subdirectory in the Context dir for your sour
 Select Create new Secret from the Source Secret drop-down. 
 Enter a name for Secret Name and choose Basic Authentication  for Authentication Type from the drop-down. 
 Enter AWS CodeCommit Git credential username and password  in the respective fields, choose Create.
+
+OCPWORKSHOPCODECOMMITUSER-at-755152575036
+wJT4uKR06mzLnrpFJpv/Jyk5W5QBzZDhAwUtosAcq8E=
+
+THIS CREDENCIAL MAY NOT BE THE ACTUAL ONE BEING USED PLEASE CONFIRM WITH THE PRESENTER.
+----
+
+The following docs dicsuss how to provide HTTP git credentials for IAM users,
+Should the credentail in Step 9 not exist you can go to the IAM console and create them.
+https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html
+
+----
+Select node js from the builder options
 ----
 
 image::addrepo.gif[project]
