@@ -39,16 +39,33 @@ As stated above users have fewer options, they have the ability to see the produ
 On the left click on products
 ----
 
+image::scproducts.png[project]
+
 This will show you a list of all the products available to you for launch.
 
+image::scproductlaunch.png[project]
 
 Step 3:: Create a DynamoDB table using AWS service catalog
 
 ----
 Click on products
 
-select DynamoDB from the product list
+Click on DynamoDB from the product list
+
+Click on Launch Product
+
+Provide a product name - <YOURSTUDENTNUMBER>ddbtable
+
+e.g student0ddbtable
+
+set the hash attribute name to Date
+
+set the range attribute name to Title
+
+Click on launch product.
 ----
+
+AWS service catalog builds out the resources using infrastructure as code in the back ground. once the resource is completely provisioned the AWS service catalog console will display any outputs provided by the infrastructure as code templates needed for application workloads to interact with these service.s
 
 
 Step 4:: create a Amazon S3 bucket using AWS Service Catalog
@@ -56,7 +73,13 @@ Step 4:: create a Amazon S3 bucket using AWS Service Catalog
 ----
 click on products
 
-Select S3 from the product list
+Click on S3 from the product list
+
+Click on Launch Product
+
+Provide a product name - <YOURSTUDENTNUMBER>S3
+
+Change prevent deletion to False
 
 
 ----
