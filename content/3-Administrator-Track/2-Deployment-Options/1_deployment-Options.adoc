@@ -1,0 +1,159 @@
++++
+title = "Options for deploying OpenShift on AWS"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+
+https://pages.awscloud.com/apn-tv-aws-partner-webinars-ep-124.html [Watch this short video on deployment options]
+
+
+*Deploying OpenShift Container Platform OCP*
+
+Before you can deploy OpenShift you will require subscrition. AWS do not sell OpenShift subscritions these are only available from Red Hat or via a Red Hat re-seller. i.e these will be BYOS (bring your own subscrition). Once you have purchased a subscription you will need to provide the software install some information to link the subscription to the install. In the case of OpenShift 3 you will need a Red Hat account username, password and a poolid which links to the desire subscrition. For OpenShift 4 the process is simpler, you will require a pull secret. 
+
+In this module we will focus on OpenShift 4.
+
+Step 1:: getting a pull secret:
+
+----
+login to https://cloud.redhat.com/openshift/
+Select clusters from the left menu
+Click on create cluster
+Select OpenShift Container Platform
+Select Run on AWS
+Scroll down to *Pull Secret*
+Click on Download Pull secret, this will be needed as a parameter input during the stack launch later.
+----
+
+Red Hat allows for the free use evaluation use of OpenShift for 60 days.
+
+Pull secrets are not required for deploying ROSA.
+
+
+*AWS OpenShift Quick Start*
+Quick Starts are automated reference deployments built by Amazon Web Services (AWS) solutions architects and AWS Partners. Quick Starts help you deploy popular technologies on AWS based on AWS best practices for security and high availability. These accelerators reduce hundreds of manual procedures into just a few steps so that you can build your production environment in minutes and start using it immediately.
+
+Each Quick Start includes AWS CloudFormation templates that automate the deployment and a guide that describes the architecture and provides deployment instructions.
+
+https://aws.amazon.com/quickstart/architecture/openshift/
+
+Step 1:: explore the deployment guide
+
+----
+https://aws-quickstart.s3.amazonaws.com/quickstart-redhat-openshift/doc/red-hat-openshift-on-the-aws-cloud.pdf
+
+Scroll down to the architecture session in the doc and take note of the VPC structure.
+
+Scroll down to the deployment steps pg12
+
+Note that you are able to deploy into either an existing or new VPC.
+
+----
+
+Step 2:: Partial quick start deploy.
+
+----
+Scroll to pg12 fo the deploy guide
+
+click on Option 1 depploy into new VPC.
+
+----
+
+This will take you to the AWS CloudFormation console
+
+Step 3::
+
+----
+click on next 
+
+You will need to provide a few input parameters.
+
+...
+
+...
+
+
+----
+
+
+
+
+
+*OpenShift installer*
+- Installer Provisioned Infrastructure or IPI :
+
+IPI the OpenShift installer will create the underlying AWS resources such as EC2 instances, AWS Load balancers etc and then deploy the OpenShift Software onto these. IPI provides a simpler deployment means as it does most fo the toil for you. 
+
+
+- User Provisioned infrastructure or UPI:
+UPI mode the customer will build out the underlying AWS resources first then the OpenShift installer will deploy OpenShift onto existing reosurces. It is common for customers to make use of infrastrature as code such as AWS CloudFormation. to deploy the underlying infrastructure.
+
+UPI may be desired in the following contexts:
+
+- Customers who desire a high degree of customization such as traffic routing, load balancer configuartion etc.
+- Customers where there is a separation of teams. Application and OpenShift platform owners are one team and a separate team controls AWS such as a CCOE (cloud center of excellence), infrastructure or networking teams. 
+- Customers with existing investment in infrastructure automation such as AWS CloudFormation or AWS Control Tower.
+
+The following document may be helpful if you do not already have infrastructure  as code templates:
+https://docs.openshift.com/container-platform/4.7/installing/installing_aws/installing-aws-user-infra.html
+
+
+Step 1:: Download the OpenShift installer
+
+----
+open cloud.redhat.com in a browser
+
+login woth your red hat account
+
+click on OpenShift on the left
+
+click on create cluster
+
+Scroll down to *run it yourself*
+
+Click on AWS
+
+Select your installer type , we will be using the IPI 
+
+Change the OS to Linux 
+
+----
+
+
+----
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-install-linux.tar.gz
+
+tar -zxvf openshift-install-linux.tar.gz
+----
+
+
+
+*Deploying Managed OpenShift:*
+
+*Red Hat OpenShift Service on AWS ROSA*
+Deploying ROSA is covered in detail in the ROSA Track:
+https://openshift4-on-aws.awsworkshop.io/4-rosa-track.html
+
+
+*OpenShift Dedicated*
+Once you have procured OptionShift dedicated via the Red Hat account team they will put ou in touch with an SRE team who will guide you through the next steps of either deploying into an AWS account Red Hat own or deploying into an AWS account you the customer own.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

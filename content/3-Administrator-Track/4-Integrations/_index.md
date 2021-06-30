@@ -1,7 +1,7 @@
 +++
 title = "Integrations"
 chapter = true
-weight = 1
+weight = 40
 +++
 
 # Integrations
