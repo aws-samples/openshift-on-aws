@@ -31,6 +31,8 @@ Scroll down to *Pull Secret*
 Click on Download Pull secret, this will be needed as a parameter input during the stack launch later.
 ----
 
+image::pullsecret.png[project]
+
 Red Hat allows for the free use evaluation use of OpenShift for 60 days.
 
 Pull secrets are not required for deploying ROSA.
@@ -76,8 +78,15 @@ You will need to provide a few input parameters.
 
 ...
 
-...
+The availablity zones to deploy into recommended 3
 
+The Access CIDRs 
+
+DNS and certfificate info
+
+Pull secret
+
+...
 
 ----
 
@@ -130,7 +139,40 @@ Change the OS to Linux
 wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-install-linux.tar.gz
 
 tar -zxvf openshift-install-linux.tar.gz
+
+ls
+
+./openshift-install --help
 ----
+
+image::openshiftinstaller1.png[project]
+
+Step 2:: Generate install config
+
+----
+./openshift-install create install-config
+
+Select AWS as the platform
+
+Select the desired install region
+
+Provide DNS base domain and cluster name
+
+Paste pull secret collected earlier in the lab
+----
+
+
+image::openshiftinstaller2.png[project]
+
+image::openshiftinstaller3.png[project]
+
+image::openshiftinstaller4.png[project]
+
+https://docs.openshift.com/container-platform/4.7/installing/installing_aws/installing-aws-customizations.html#installing-aws-customizations
+
+Step 3:: Cluster install or generate ignition
+
+The ignition files used for OpenShift to install are either generated in real time as the cluster is created or you can generate and modify these if needed before cluster creation. These steps will require AWS EC2, EBS and other permisions. 
 
 
 

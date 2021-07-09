@@ -1,0 +1,169 @@
++++
+title = "Managing Storage"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+== Extensions to OpenShift using OperatorHub
+
+=== AWS EBS CSI
+image::ebscsi.png[image]
+
+Step 1:: Install EBS CSI 
+
+----
+Switch to the admin console
+
+Expand Operators
+
+Search for EBS CSI
+
+Click on the EBS CSI
+
+Click on *Install*
+
+Click on *Subscribe*
+
+Select installed Operators
+
+Click on the EBS CSI
+
+Click in create instance
+
+Click on create
+
+----
+
+image::ebscsi2.png[image]
+
+Step 2:: Create a storage Class
+
+----
+Switch to the admin console
+
+expand storage
+
+Select Storage Classes
+
+Click on *Create storage Class*
+
+Provide a name
+
+note the *reclaim policy*
+
+Set the type to *gp2*
+
+Set filesystem type to *ext4*
+
+Click Create
+
+----
+image::ebsclass1.png[image]
+image::ebsclass2.png[image]
+
+Step 3:: Create a persistent volume
+----
+Switch to the admin console
+
+expand storage
+
+Select Persistent Volumes
+
+Click Create persistent volume
+
+Change the name
+
+change the storageClassName to class name used in Step 2
+
+Click create
+----
+
+Step 4:: Create a volume claim
+----
+Switch to the admin console
+
+expand storage
+
+Select Persistent Volumes Claims
+
+Click *Create persistent volume claim*
+
+Select a storage class
+
+Provide a claim name
+
+define a size 
+
+Click Create 
+----
+
+
+=== AWS EFS Operator
+image::efsoperator.png[image]
+
+Step 1:: Install EFS Operator
+
+----
+Switch to the admin console
+
+Expand Operators
+
+Search for AWS EFS CSI
+
+Click on the EFS CSI
+
+Click on *Install*
+
+Click subscribe
+----
+
+Step 2:: Create an EFS volume
+
+----
+Click on the EFS operator
+
+Click in create instance
+
+Click on create
+
+----
+
+This will create an EFS volume as well as a persitent volume claim against it.
+
+
+
+
+=== Red Hat Data Foundation (formerly OpenShift container storage services OCS)
+
+Red Hat Data Foundation is a separate Red Hat product which is installed and run as a container workload on OpenShift. 
+Data foundation will add functions to the OpenShift infrastructure nodes. These nodes manage and present stoage to OpenShift worker nodes. Additional storage nodes will have storaged attached to them.
+
+e.g EBS volumes are attached to the Data Foundation storage nodes. These EBS volumes can be aggregated and presented to worker nodes as block, file, or shared storage. Data foundation can also provide data replication for hybrid storage. 
+
+*Red Hat Data Foundation is not at this stage supported on Red Hat OpenShift Service on AWS (ROSA)*
+
+=== Amazon S3
+image::s3operator.png[image]
+
+There are a few ways in which S3 buckets can be provisioned, AWS Service catalog, Amazon controller for Kubernettes, 3rd party operators, Spring boot frame works etc. Some of these allow admins and developers to provision S3 storage from within OpenShift, however OpenShift does not manage S3. 
+
+Application workloads would be configured with environment variables to connect to S3. 
+
+Amazon S3 provides a good option for object storage.
+
+We will touch on AWS S3 in more detail the integration modules under the admin and dev tracks.
+
+=== AWS EFS CSI
+coming soon....
+
+At this stage the EFS CSI is an OpenShift Roadmap item, once released it will allow customers to managed Amazon EFS from within OpenShift in a similar way to EBS. 
+
+
+
+
+
+

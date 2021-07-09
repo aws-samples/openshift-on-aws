@@ -1,7 +1,7 @@
 +++
 title = "Decision Maker Track"
 chapter = true
-weight = 5
+weight = 6
 +++
 
 # Decision Maker Track

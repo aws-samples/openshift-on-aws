@@ -1,5 +1,5 @@
 +++
-title = "exploring and configuring machinesets"
+title = "exploring and configuring scaling"
 chapter = false
 weight = 1
 +++
@@ -15,78 +15,201 @@ With OpenShift 4.0+, we now have the ability to dynamically scale the cluster si
 In this lab you will learn how to scale OpenShift 4 cluster both manually and automatically.
 Applying autoscaling to an OpenShift Container Platform cluster involves deploying a ClusterAutoscaler and then deploying MachineAutoscalers for each Machine type in your cluster.
 
+*Machine sets*
+MachineSet resources are groups of machines. Machine sets are to machines as replica sets are to pods. If you need more machines or must scale them down, you change the replicas field on the machine set to meet your compute need.
+
+The following custom resources add more capabilities to your cluster:
+
+*Machine autoscaler*
+The MachineAutoscaler resource automatically scales machines in a cloud. You can set the minimum and maximum scaling boundaries for nodes in a specified machine set, and the machine autoscaler maintains that range of nodes. The MachineAutoscaler object takes effect after a ClusterAutoscaler object exists. Both ClusterAutoscaler and MachineAutoscaler resources are made available by the ClusterAutoscalerOperator object.
+
+*Cluster autoscaler*
+This resource is based on the upstream cluster autoscaler project. In the OpenShift Container Platform implementation, it is integrated with the Machine API by extending the machine set API. You can set cluster-wide scaling limits for resources such as cores, nodes, memory, GPU, and so on. You can set the priority so that the cluster prioritizes pods so that new nodes are not brought online for less important pods. You can also set the scaling policy so that you can scale up nodes but not scale them down.
+
+*Machine health check*
+The MachineHealthCheck resource detects when a machine is unhealthy, deletes it, and, on supported platforms, makes a new machine.
+
+
+
 === Manual Cluster Scale Up/Down (Option 1)
 
-In this exercise we're going to manually add worker nodes to our cluster:
+Step 1:: Viewing components:
 
-- Go to the OpenShift web console and login with admin username that is provided
+----
+Login to the OpenShift web console
 
-- Browse to `Compute` on the left-hand side-bar, and click `Machine Sets`.
+Select the admin console
 
-- Select `openshift-machine-api` from the Project dropdown and you should see the list of machine sets available for the platform:
+Expand Compute
+
+Select the *openshift-machine-api* project
+
+Select nodes
+
+Select machine sets
+
+Select Machine autoscalers
+
+----
+
+You should see the list any existing scale compnents available for the platform:
 
 image::ocp4-machinesets.png[image]
 
 
-- Select one of the machine sets in the list by clicking on the name, e.g. `cluster-3e5f-kqr2b-worker-us-east-2a` (yours will be slightly different)
 
-NOTE: Depending on the AWS region you chose, you may have several worker machine sets that can be scaled, some of which are at a scale of 0. It does not matter which set you choose for this example.
+Step 2:: Create a Machine Set
 
-- In the Actions pull down menu (on the right hand side), select Edit Count
+Machine sets are single AZ constructs, for multi AZ deployments a machine set can be created in each AWS AZ.
+Alternatively machine pools can be used.
 
-- Enter `3` and click Save
+----
+Select Machine sets
+
+Click on create machine set
+
+Replace the YAML with the following
+
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  creationTimestamp: '2021-07-08T16:51:09Z'
+  generation: 2
+  name: worker
+  namespace: openshift-machine-api
+  resourceVersion: '550802'
+  selfLink: >-
+    /apis/machine.openshift.io/v1beta1/namespaces/openshift-machine-api/machinesets/worker
+  uid: b1b84b30-e00c-11eb-97d5-0248f54f61c7
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      foo: bar
+  template:
+    metadata:
+      labels:
+        foo: bar
+    spec:
+      providerSpec:
+        value:
+          ami:
+            id: ami-046fe691f52a953f9
+          apiVersion: awsproviderconfig.openshift.io/v1beta1
+          blockDevices:
+            - ebs:
+                iops: 0
+                volumeSize: 120
+                volumeType: gp2
+          deviceIndex: 0
+          instanceType: m4.large
+          kind: AWSMachineProviderConfig
+          placement:
+            availabilityZone: us-wast-2a
+            region: us-east-1
+
+Click Save
+----
+
+This will create a machine set for a worker node in us-west-2
+
+Step 3:: Create a machine autoscaler
+
+----
+Select machine auto scaler
+
+Create machine autoscaler
+
+Change the name to us-west-2-worker
+
+Change the scale target ref name to worker 
+
+click save
+----
+
+This creates a definition of minimum and maximun scaling of the machin set created in Step 2.
+
+Step 4:: manual scaling
+
+----
+Select machine sets
+
+Select a machine set
+
+Click on actions 
+
+Select edit count
+
+Increase the count
+
+Click save
+----
 
 image::ocp4-ms-count.png[image]
 
-- Click the Machines tab and see the allocated machines.
-- Click Overview tab, it will let you know when when the machines become ready.
-- Click Machine Sets under Machines on the left-hand side again, you will also see the status of the machines in the set:
+----
+Click the Machines tab and see the allocated machines.
+
+Click Overview tab, it will let you know when when the machines become ready.
+
+Click Machine Sets under Machines on the left-hand side again, you will also see the status of the machines in the set:
+----
 
 image::ocp4-ms-count3.png[image]
 
-- You may need to wait a few minutes before the machines become ready.
+*You may need to wait a few minutes before the machines become ready*
 
 In the background additional EC2 instances are being provisioned and then registered and configured to participate in the cluster, so yours may still show 1/3.
 
 You can also view this in the CLI:
 
-```
-[~] $ oc get machinesets -n openshift-machine-api
+
+
+=== Managing nodes via the CLI
+
+Step 1:: list machine sets
+
+----
+oc get machinesets -n openshift-machine-api
+----
+
+This should return something like:
+----
 NAME                                   DESIRED   CURRENT   READY   AVAILABLE   AGE
 cluster-3e5f-kqr2b-worker-us-east-2a   3         3         3       3           24h
 cluster-3e5f-kqr2b-worker-us-east-2b   1         1         1       1           24h
 cluster-3e5f-kqr2b-worker-us-east-2c   1         1         1       1           24h
+----
+
+Step 2:: list nodes
+
+----
+oc get nodes
+----
 
 
-[~] $ oc get nodes
-NAME                                         STATUS   ROLES          AGE     VERSION
-ip-10-0-128-248.us-east-2.compute.internal   Ready    worker         3m56s   v1.13.4+c3617b99f
-ip-10-0-137-97.us-east-2.compute.internal    Ready    master         24h     v1.13.4+c3617b99f
-ip-10-0-138-117.us-east-2.compute.internal   Ready    worker         24h     v1.13.4+c3617b99f
-ip-10-0-141-208.us-east-2.compute.internal   Ready    worker         3m52s   v1.13.4+c3617b99f
-ip-10-0-148-106.us-east-2.compute.internal   Ready    worker         24h     v1.13.4+c3617b99f
-ip-10-0-156-129.us-east-2.compute.internal   Ready    master         24h     v1.13.4+c3617b99f
-ip-10-0-167-6.us-east-2.compute.internal     Ready    master         24h     v1.13.4+c3617b99f
-ip-10-0-170-241.us-east-2.compute.internal   Ready    worker         24h     v1.13.4+c3617b99f
-```
+Step 3:: scaling via CLI
 
-You'll note that some of these systems 'age' will be much newer than some of the others, these are the ones that will have just been added in. Before continuing, scale back down by editing the count to whatever it was previously for the Machine Set, i.e. return it to '1' node.
-
-==== Manual Cluster Scale Up/Down via the CLI (Option 2)
-
-- You can alter the Machine Set count in several ways in the web UI console,
+You can alter the Machine Set count in several ways in the web UI console,
 but you can also perform the same operation via the CLI by using the oc edit
 command on the machineset in the openshift-machine-api project.
 
-```
-[~] $ oc get machineset -n openshift-machine-api
+----
+oc get machineset -n openshift-machine-api
+----
+
+----
 NAME                                   DESIRED   CURRENT   READY   AVAILABLE   AGE
 cluster-4c7b-lkw4d-worker-us-east-2a   1         1         1       1           6h17m
 cluster-4c7b-lkw4d-worker-us-east-2b   1         1         1       1           6h17m
 cluster-4c7b-lkw4d-worker-us-east-2c   1         1         1       1           6h17m
-[~] $ oc edit machineset cluster-4c7b-lkw4d-worker-us-east-2a -n openshift-machine-api
-(opens in vi)
-```
+----
+
+you can use oc edit machineset to open the YAML in vi and update it, you will need to collect the machine set name from oc get above.
+
+----
+oc edit machineset cluster-4c7b-lkw4d-worker-us-east-2a -n openshift-machine-api
+----
 
 - You will see the following text:
 
@@ -122,7 +245,7 @@ spec:
   template:
 (...)
 ```
-NOTE: If you're uncomfortable with vi(m) you can use your favorite editor by specifying EDITOR=<your choice> before the oc command.
+
 
 - The above is just an example of the entire machine set configuration. Update `replicas` from 1 to 2
 - Save your changes simply save and quit from your editor.
@@ -131,8 +254,12 @@ machine set (depending on which one you edited) will be confirmed:
 
 - Once that has been changed, you can view the outcome here:
 
+
+----
+oc get machinesets -n openshift-machine-api
+----
+
 ```
-[~] $ oc get machinesets -n openshift-machine-api
 NAME                                   DESIRED   CURRENT   READY   AVAILABLE   AGE
 cluster-3e5f-kqr2b-worker-us-east-2a   3         3         3       3           24h
 cluster-3e5f-kqr2b-worker-us-east-2b   1         1         1       1           24h
@@ -142,19 +269,10 @@ cluster-3e5f-kqr2b-worker-us-east-2c   1         1         1       1           2
 Again, before you move forward, return the `replica` count back to 1, using the same method as above.
 
 
-=== Automatic Cluster Scale Up
+=== Automatic Cluster Scale Up via CLI
 
-OpenShift can automatically scale the infrastructure based on workload provided
-there is a configuration specified to do so. Before we begin, ensure that your
-cluster is back to having three nodes running:
+You can edit exiting machine autoscalers in a similar way to how you modified machine sets above.
 
-```
-[~] $ oc get machinesets -n openshift-machine-api
-NAME                                   DESIRED   CURRENT   READY   AVAILABLE   AGE
-cluster-3e5f-kqr2b-worker-us-east-2a   1         1         1       1           25h
-cluster-3e5f-kqr2b-worker-us-east-2b   1         1         1       1           25h
-cluster-3e5f-kqr2b-worker-us-east-2c   1         1         1       1           25h
-```
 
 ==== Define a MachineAutoScaler
 
@@ -448,6 +566,3 @@ $ watch -n10 'oc get machines -n openshift-machine-api'
 
 image::granfana-autoscale.png[image]
 
-
-
-Congratulations!! You now know how OpenShift 4 cluster scaling works!! For more information, see https://docs.openshift.com/container-platform/4.1/machine_management/applying-autoscaling.html for details.
