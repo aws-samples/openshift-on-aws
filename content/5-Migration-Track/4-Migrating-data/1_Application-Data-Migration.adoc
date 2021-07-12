@@ -1,0 +1,26 @@
++++
+title = "Migrating Application related Data"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+It is absolutely true that data has gravity. It is one thing to deploy OpenShift on AWS for net new or green field application workloads. Existing workloads however may have persitent storage for the application, existing audit data, database storage, even caching date. 
+
+Not all data carries the same weight, it may be possible to recreate data such as caching related content, it may be possible to create keep existing data, generate new data and merge these if needed later. This is not uncommon for fincial solutions where data could be archived on an anual basis. For large, high velocity transactional systems or data sources with security and complaince considerations migration of the data may be a complext process or introduce risk. 
+
+These considerations may result in application workloads not being migrated. 
+
+In this module we will explore considerations for various types of data, tools and approaches to migrate data.
+
+
+== AWS Data Migration Service (DMS)
+== AWS Schema Conversion Toolkit (SCT)
+== Red Hat Data Foundation (formally OpenShift Container Storage Services)
+== AWS Service Migration Service
+== AWS Application Migration Service
+

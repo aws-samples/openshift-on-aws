@@ -1,0 +1,90 @@
++++
+title = "Application Workload Migratio Considerations"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+== Current workload Considerations:
+
+*Containers :*
+Are the application workloads to be migrated already container workloads in OpenShift? 
+In this case they would need to be re hosted form one OpenShift cluster to another.
+It may be possible that these containers are running on an older version such as OpenShift 3 and testing would need to be done to assess if any refactoring is needed for OpenShift 4.
+
+Should the application work loads not be containers and these are instead traditional applications. 
+There needs to be consideration regarding who will be containerizing these, how they will approach that and how this will impact time lines.
+
+There are some tools which can assist in the migration of existing containers as well as tools to assist in modernizing tranditional applications to containers. We will explore these in greater detail later in the track.
+
+*Monolithic :*
+When we think of monolithic applications we typically think on tradition technical debt and non containerized workloads. Should this be the case, they will likely go through a modernization phase before becoming workloads on the migrated OpenShift platform. 
+
+Who is going to modernize these workloads?
+How long will they take?
+
+This could have a negative impact on the overall migration if the timing of this does not compliment the migration of OpenShift.
+For example if the OpenShift platform is migrated to AWS, then only the modernization of workloads begins. If this takes a very long time for the applications to modernized and deployed on OpenShift, it may result in undesired costs of running OpenShift clusters with minimal application workload density to justify the ROI.
+
+In cases where workloads have gone through a lift and shift process. These may be containerized monoliths which will later be further modernizaed once the migration is complete. In certain cases monoliths can be simpler to migrate as there is less consideration of all the inter connected parts, however they may have other challenges around related data.
+
+For workloads which have been broken down into micro services it is crucial to understand how these interact and depend on each other. 
+Which Micro services will need to be migrated at the same time, which will introduce resilience or performance concerns.
+
+
+*Dependencies :*
+Everything has some form of dependency what we are mainly concerned about is which parts interact with each other and impact performance, and resilience. 
+
+Which micro services interact with each other, ideally these should be migrated together to avoid traffic moving back and forth between AWS and on premises or other environments. Like wise data sources, if these are remaining in their current location what will the impact of this be?
+
+Though it is common within hybrid use cases to have application workloads interact with services or data sources in other evnironments it should be considered for how long this will be the case, what are the implecations on performances, and resilience.
+
+*Data Sources :*
+Existing applications have related data, this may be databases or a variety of other sources. Are these also being migrated? What is the size and nature of these sources, how will they be migrated? Should these not be migrated very careful consideration should be taken with regard to how will migrated workloads connect back to these sources. Factors such as connectivity, security, performance and resilience become critical to assess. 
+
+
+== Migration considerations:
+
+*Migration targeted workloads*
+It is not uncommon for not all workloads to be migrated. Customers migrate to the cloud for a variety of reasons.
+This may be a data center exit in which case the vast magority of an application portfolio may need to be migrated.
+
+In other cases where customers are migrating to AWS to gain different resilience, scalablity or agily some work loads may have a different migration time frame to others. In this case some workloads may move to AWS and other may be refactored or replaced entirely using AWS native services or they simply remain where they currently are.
+
+Taking this into account it is helpful to understand which application workloads exist, which are intended to be migrated, which will not be migrated and how do the application workloads relate to each other.
+
+At the very least this informs the scope of the application migration.
+This can highlight inter workload dependencies which will inform which applications should be migrated together if possible.
+This also will impact sizing of the actual clusters for the short, and long term.
+Finally this information may help define the AWS and Red Hat costs over a period of time, this can be used to help motivate for funding support, negociated rates etc.
+
+AWS has several Migration funding programs which customer can take advantage of.
+Cost reduced aggreements such as Enterprize Discount Program (EDP) also exist.
+
+*Means of migration*
+Means of migration can vary, all the way from manually pushing apps into the new platform, to updating pipelines and pushing code and containers, to using automated migration tools. 
+
+For customers with a small number of workloads it is possible for dev teams to take a few hours and manually migrate. 
+This is less practical for large scale migartions of 1000s of applications. 
+
+understanding the relationship between the skills , tools, automation already in use, the applications to be migrated and the desire migration timeframe will greatly shape this discussion.
+
+Later in the Migration track we will explore various approaches and tools.
+
+
+*Migration time frame*
+Certain migrations are more time bound than others, this is commonly seen if the migration needs to be completed before some form of the lease of renewal process. In migrations related to data center exits there may be a fixed deadline, failure to meet this may result in costs related to a renewal of the data center lease, or possible other software subscriptions. Time frames may also be impacted by consulting contracts, hardware and software renewals.
+
+Understanding the time frames not only provides insight into the desired migration deadline but may have an impact of how the migration is achieved. For instance if the time frame is trunctated and the primary goal is to get into the cloud, a lift and shift approach with minimal change may be preferred. In this case once the workloads are on AWS they may only then go through a further modernization step.
+
+For customers with longer time frames this may present the opportunity to re-assess, refactor or modernize application workloads as part of the migration. 
+
+
+
+Business integrations
+
+

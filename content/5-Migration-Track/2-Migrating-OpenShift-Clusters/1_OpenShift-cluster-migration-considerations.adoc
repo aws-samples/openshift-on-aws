@@ -1,0 +1,157 @@
++++
+title = "OpenShift cluster Migration considerations"
+chapter = false
+weight = 1
++++
+
+
+
+:imagesdir: /images
+
+
+As businesses seek greater agility they adopt new technologies and process. These become entrenched into the business something that may start off very simple can over time become a complex larger set of inter connected considerations. This is often the case with application platforms. 
+
+In this module we will discuss a few high level things which should be considered as part of migrating the OpenShift platform itself.
+
+
+
+== What is the current implementation:
+What is the current environment? Non-prod, Prop? OpenShift 3 or OpenShift 4? 
+How mature is it and what is its scale?
+What systems does the implemtation interact with and depend on?
+
+We will touch on these in greater detail as we go. 
+
+== Current skill set:
+This is a critical consideration as it will have an impact on the how successful a migration can be as well as have an impact on the time it takes to migrate. The two main concerns are around current skill set regarding OpenShift and kill set regarding the migration target location i.e AWS.
+
+There are a few possibilities:
+
+*Customers with deep technical skills on OpenShift but new to AWS*
+
+This is common for existing OpenShift customers who are migrating from on premises to the cloud. 
+There are some assumptions here: That there is experience with installing, configuring and maintaining OpenShift. This should not be assumed and it would be wise to confirm this. 
+
+It is common in this case for teams to spend time comparing AWS constructs to those they are familiar with on premises. 
+This will often include networking, security etc, then how does their current means of installing and configuring OpenShift relate to AWS.
+
+Helping these customers grasp AWS services such as VPC, IAM, Direct Connect, Transit gateway, control tower, organizations, as quickly as possible can have a very real impact on the migration timeframe.
+
+There is a risk in not including a variety of stake holders during this process. enaging with a team of application owners, or a cloud, or infrastructure team in isolation will result in addressing concerns only to have to repeat the process with a slightly different focus for another team. This commonly manifests when security teams are only included at a later stage. To avoid resetting the conversation it is best to include stake holders very early on. In the case of OpenShift there is always a Security stake holder, an infrastructure stake holder, and a developer or application owner.
+
+AWS professional services engagements may be helpful in this context.
+
+*Customers with deep technical skills on AWS but new to OpenShift*
+
+There are a few drivers for this situation, it may be an infrastructure or Cloud center of excellence which is considering migrating a platform for another team and thus they have skills around AWS but limited understanding of OpenShift. This also manifests as a result of company acquitions. 
+
+There should be questions asked:
+If the team has no OpenShift skills, then who is installing, configuring the existing platform?
+The answer may highlight long term risks.
+This may open the door to explore managed OpenShift options instead of self managed such as the *Red Hat OpenShift Service on AWS* (ROSA)
+This may translate to inclution of stake holders, i.e have the cloud team prepare the AWS environment, then have the application platform owner deploy OpenShift.
+
+Having Red Hat consulting teams or a Service integrator (SI) assist may be prudent. 
+
+*Customers with limited skills on both OpenShift and AWS*
+
+This is an interesting situation... Is this a net new OpenShift customer? 
+In this case there is a large amount of learning to do in order to successfully migrate. Teams will need to digest all the info needed for AWS as well as OpenShift. 
+
+This is an ideal situation to bring in help, That help would likely be in the form of consulting enagegments.
+
+
+== Feature and function use:
+
+OpenShift is not simply a kubernettes orchestration layer, it is a turn key solution which provides container runtime, orchestration, pipe line, build, container img registry, monitoring, and more. OpenShift would even be used for running on virtual machines or even severless functions. 
+
+Having a clear understanding of which functions provided by OpenShift a Customer is making use of will allow for better planning of the migration.
+
+If many of the build in functions are being used, then it is likely that a matching deployment and configuration of OpenShift on AWS will take place, and how things are configured or automated in the current environment could be reused. 
+
+*Are all the functions provided by OpenShift that are being used available on AWS?*
+It is not common to see OpenShift customers use knative virtualization on OpenShift on AWS, these customers more commonly migrate those VMs directly to vmware on AWS or EC2. Like wise it is not common to see the use of server less functions on OpenShift AWS customers adopt AWS lambda. 
+
+However should less of the functions provided by OpenShift be consumed this may simplify the migration of OpenShift itself, but may translate to the additional migration of other systems and solution which provide these functions.
+
+This may open the door towards how much value is the customer getting from OpenShift?
+Should they be taking more advantage of what OpenShift offers? Or Should they be exploring other options?
+This is something only the customer can assess for themselves!
+
+
+== Current deployment and config process:
+
+This may be related to Current skill set...
+If this is a migration from OpenShift 3 to OpenShift the current deployment and config process may be less helpful due to OpenShift introducting a completely new installer process.
+
+Having an understanding of how teams install and configure their current implementation would shed light on technical skills, any automation which may accelerate deployment on AWS. It will also provide deeper insight into all the aspects which may need to be migrated to the cloud. 
+
+Common elements here would include:
+ *Infrastructure as code use* : 
+ Typically AWS customers would take advantage of AWS CloudFormation, however hybrid customers may have existing investment in a 3rd party solution such as teraform. This may result in customers not being able to use provide infrastructure as code teamplates they may need to create to adapt their own.
+
+*Configuration automation* :
+What is any automated configuration tools and process exist?
+These could accelerate the migration process, it should however also be explored if these systems and solutions will also be migrated and if they will need to be migrated before or post the migration of OpenShift. *Ansible* May be one such solution.
+
+*Disconnected install and config sources* :
+Should there be the requirement of secure disconnected environments or deployment in to AWS govcloud, certain aspects of the deployment such as container images, Amazon machine images AMIs, update systems, mirror repositories may be needed.
+
+== Current integrations:
+There are possible supporting systems that need to be considered, these include identity providers, security solutions, monitoring systems, brokers, operators etc. 
+
+What existing integrations exist? 
+Are they being kept or moved away from?
+What possible future integrations are being considered?
+Who owns each of these integrations?
+How are each of these integrations installed and configured?
+Are the intregrations themselves being migrates?
+
+Lets touch on a few common systems:
+*Identity providers*
+Most common of these is MicroSoft Active Directory, though it is possible to have connectivity from AWS back to on-premises to allow OpenShift on AWS to interact with existing directory servers, this is not ideal. It recommended to have identity providers on the cloud. 
+
+AD replication and time syncronization are considerations here.
+
+Customers may be able to take advantage of AWS managed AD. 
+https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_microsoft_ad.html
+
+*Monitoring*
+How are clusters and application workloads being monitored?
+What is the monitoring data being stored or aggregated?
+Is this being used for additional reporting, analysis or visualization?
+
+These may include solutions such as Prometheus, graphana. Are the build into OpenShift prometheus and graphana being used? Is there a desire to make use of the AWS managed versions to reduce admin overhead?
+
+Elastic search, fluetd and kibana were common moniting stacks within OpenShift 4, however there has been a noted shift towards other solutions such as prometheus, graphana, splunk, dynatrace etc. If EFK stacks are still being used are these making use of the EFK stack provided by OpenShift itself or are these separate systems which may need to be migrated?
+
+3rd party monitoring solutions suchs as splunk and dynatrace are joint partners of AWS and Red Hat. It is common to see solutions such as splunk collect monitoring from OpenShift and send that to AWS cloudwatch. 
+
+*Security*
+Similar to monitoring solutions container security will see solutions either running as side car container workloads on OpenShift, or may see integration with CICD automation. These may include partner solutions such as Snyk, Aqua, Twistlock, Black duck, etc.
+
+*Something to consider!!!*
+If migrating to a managed version of OpenShift such as ROSA or OSD, these do not allow full admin access to the underlying OS. 
+How integartions are installed may hinder their compatability with these platforms.
+Most partner solution are now available as a container workload that can be run within OpenShift or a kubernettes operator. 
+
+
+== Current CICD and automation:
+Having an understanding of Current CICD and automation will provide insight into if these systems will need to be migrated and configured as part fo the OpenShift migration or if they will just need to be updated to support deployment to the new clusters.
+
+These may provide a means of migrating the actual application workloads themselves.
+
+== Current workloads:
+This will be dicsussed in far greater detail under migration of application workloads. 
+
+At a high level having insight into the workloads, which will be deprecated, which will be migrated and which will remain help with defining the scope as well will help with sizing and costing of the new OpenShift implementation.
+
+this will also privide visability into the related data systems such as persitent storage and databases which may need to be migrated to connected back to.
+
+
+== Sizing:
+Current Sizing and utilization will provide a starting point for sizing and cost of the implementation on AWS.
+
+
+
+
