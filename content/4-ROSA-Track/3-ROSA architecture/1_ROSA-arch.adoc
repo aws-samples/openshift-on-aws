@@ -19,13 +19,13 @@ This is not a Lab section but rather a technical discussion and deep dive into t
 
 ### Common deployment components:
 
-All ROSA implementations will have 3 x Master node in order to cater for cluster quorum and to ensure proper fail over and resilience of OpenShift. At least 2 infrastructure nodes to ensure resilience of the OpenShift router layer which provides end use application access. A collection of AWS elastic load balancers, some of which will provide end user access to the OpenShift router layer, providing access to the application workloads running on OpenShift, other AWS elastic load balancers will expose end points used for cluster administration and management by the SRE teams. 
+All ROSA implementations will have 3 x Master nodes in order to cater for cluster quorum and to ensure proper fail over and resilience of OpenShift. At least 2 infrastructure nodes to ensure resilience of the OpenShift router layer which provides end use application access. A collection of AWS elastic load balancers, some of which will provide end user access to the OpenShift router layer, providing access to the application workloads running on OpenShift, other AWS elastic load balancers will expose end points used for cluster administration and management by the SRE teams. 
 
 The OpenShift Master nodes cater for API end point for cluster administration and management, Controllers, and etcd.
 
 The OpenShift Infrastructure nodes cater for build in OpenShift container registry, OpenShift router layer and monitoring.
 
-ROSA clusters will require public and Private AWS VPC subnets per AZ. For Single AZ implementations two subnets will be required ( one public one private) for Multi AZ implementations six subnets will be needed (one public and one private per AZ).
+ROSA clusters will require AWS VPC subnets per AZ. For Single AZ implementations two subnets will be required ( one public one private) for Multi AZ implementations six subnets will be needed (one public and one private per AZ), for private clusters with Private link 3 private subnets will be required.
 
 
 ### Default deployment (Single AZ)
@@ -93,16 +93,24 @@ When deploying ROSA into an existing VPC, the installer will prompt for subnets 
 image::rosa-arch-existing.png[Rosa existing arch]
 
 
-### Public and Private ROSA clusters
+### Public, Private and Private-Link ROSA clusters
 
-At this stage public and private ROSA cluster refer to where will the application workloads running on OpenShift be accessible form.
-Selecting a public cluster will create an AWS internal classic load balancer which provides access to port 80 and 443 from within the VPC or via, peering, AWS direct connect or transit gateway. This internal Load balancer has the Infrastructure nodes as targets and will forward to the OpenShift router layer. An additional public facing load balancer will allow for connections from the internet.
+There are three implementations to compare, ROSA public vs private clusters and then private clusters with AWS PrivateLink. Public and private ROSA clusters refer to where the application workloads running on OpenShift will be accessible from. 
 
-Private clusters will not create the public facing load balancer only the internal one. Private clusters will still require public subnets ( which in tern will require an IGW, public route table and route to the internet via the IGW). This is required for the provisioning process to create the public facing AWS network load balancers which will provide access to the cluster for administrative and management by Red Hat SRE.
+Selecting a public cluster will create an AWS Classic Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html), which provides access to port 80 and 443 which is internet facing,  and can be accessed from within the VPC or via peering, AWS Direct Connect, or transit gateway as well as from the public internet. 
 
-At this stage the only difference between selecting public vs private is the creation of the public facing load balancer for access to the application workloads.
+Selecting  a private cluster will create an AWS Classic Load Balancer (https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html), which provides access to port 80 and 443 which is internet facing,  and can be accessed from within the VPC or via peering, AWS Direct Connect, or transit gateway. 
+This internal Load balancer has the infrastructure nodes as targets and will forward to the OpenShift router layer. There is no public or internet facing load balancer so application workloads can not be accessed from the internet.
 
-ROSA will see changes to private clusters later in 2021 which will cater for private administration and management. This will see a private link infrastructure to enable SRE access.
+Private clusters will still require public subnets, which in turn, will require an IGW, public route table, and route to the internet via the IGW (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html). This is required for the provisioning process to create the public facing AWS Network Load Balancers that will provide access to the cluster for administrative and management by Red Hat SRE.
+
+The only difference between selecting public vs private is the classic load balancer for apps is internet facing for public and internal for private.
+
+In June 2021 ROSA Private clusters with AWS Private Link were released.
+
+ROSA private clusters with private link are completely private Red Hat SRE teams will make use of private link endpoints to access the cluster for management. no public subnets, route tables or IGW are required.
+
+
 
 #### ROSA Private cluster 
 
@@ -111,6 +119,39 @@ image::rosa-arch-private.png[Rosa private arch]
 #### ROSA Public cluster
 
 image::rosa-arch-multi.png[Rosa multi arch]
+
+#### ROSA Private cluster with Private-Link
+
+----
+rosa create cluster --private-link --cluster-name rosaprivatelink --multi-az --region us-west-2 --version 4.8.2 --enable-autoscaling --min-replicas 3 --max-replicas 3 --machine-cidr 10.0.0.0/16 --service-cidr 172.30.0.0/16 --pod-cidr 10.128.0.0/14 --host-prefix 23 —subnet-ids subnet-0a34c58efd2687955,subnet-0f8d8e6e213c5ba15,subnet-04e7a92df201ee976
+----
+
+ROSA Private link clusters can only be deployed into an existing VPC.
+
+
+image::rosa-arch-privatelink.png[Rosa privatelink arch]
+
+Typically ROSA private clusters with private link will be implemented as part of a greater transit gateway implementation where the VPC for ROSA will not have internet access. traffic will flow from the ROSA VPC to either on premises or another VPC or AWS account which provides an a single controlled point of egress. 
+
+image::rosa-arch-transitgw.png[Rosa tarnsitgw arch]
+
+#### Connection flow:
+
+*Customer/application consumer connection flow:*
+Customers connecting to application workloads running on OpenShift will take place over port 80 or 443. Looking at a public ROSA cluster, there is both an internal and internet facing Classic Load Balancer exposing these applications. Client connections from the internet will resolve to the public facing Classic Load Balancer, which will forward connections to the OpenShift routing layer running on the infrastructure nodes. Connections coming from within the same VPC, or via VPN, AWS Direct Connect, or transit gateway will come via the internal Classic Load Balancer that forwards connections to the OpenShift Routing layer running on the infrastructure nodes. 
+
+*Administrative or SRE connection flow:*
+Developers, administrators, and SRE teams follow a different path. These connections will make use of Port 6443 and connect to a Network Load Balancer, which connects to the OpenShift API or OpenShift web console. This could be for users and SRE members to access the OpenShift web console and provide a graphical means of operational administration. This could also be used by DevOps solutions such as automated pipeline, build, and deploy processes to deploy application workloads onto the OpenShift cluster. These connections if coming from within the VPC, via AWS Direct Connect, Peering, VPN, or transit gateway would hit the internal Network Load Balancer and be forwarded to the API endpoint on one of the OpenShift Master nodes. Connections coming from the internet would hit the internet facing network load balancer and  then forwarded to one of the Master nodes.
+
+ROSA is still OpenShift so the OpenShift CLI “oc” is still used for much of the above administration and automation functions. The OpenShift CLI “oc” is an extension of the Kubernetes kubectl and included OpenShift specific abstractions such as Routes, Projects, etc. 
+
+Load balancers for AWS services:
+
+Customers wanting to expose the workloads running on OpenShift to other AWS accounts and VPCs within their Organization via AWS PrivateLink (https://aws.amazon.com/privatelink) will need to replace the Classic Load Balancer with a Network Load Balancer. This is not supported via the ROSA CLI at this stage and will require the manual creation of the NLB and changes to the OpenShift cluster egress. 
+
+This does not hinder admin or SRE access to the cluster for administration; this change does not hinder delete of ROSA clusters via the ROSA CLI.
+
+Similarly, customers looking to make use of AWS Web Application Firewall (https://aws.amazon.com/waf/) as a security solution in combination with OpenShift application workloads will need to implement an additional Application Load Balancer in front of the Classic Load Balancer as a target for AWS WAF.
 
 ### Shared VPC
 
