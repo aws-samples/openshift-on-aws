@@ -1,0 +1,71 @@
++++
+title = "Red Hat Migration toolkit for Containers"
+chapter = false
+weight = 2
++++
+
+
+
+:imagesdir: /images
+
+
+== Current workload Considerations:
+
+Step 1:: Install the Migration toolkit operator
+
+----
+Login to the OpenShift web console, admin console
+
+Click on Operators
+
+Select Operator hub
+
+Search for Migration toolkit 
+
+Select the Migration toolkit for containers 
+
+Click install
+
+Click subscribe
+----
+
+image::mtc1.png[image]
+image::mtc2.png[image]
+image::mtc3.png[image]
+
+
+== Replication Storage
+AWS S3
+
+Prerequisites
+The AWS S3 storage bucket must be accessible to the source and target clusters.
+You must have the AWS CLI installed.
+If you are using the snapshot copy method:
+You must have access to EC2 Elastic Block Storage (EBS).
+The source and target clusters must be in the same region.
+The source and target clusters must have the same storage class.
+The storage class must be compatible with snapshots.
+
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.6/pdf/migration_toolkit_for_containers/OpenShift_Container_Platform-4.6-Migration_Toolkit_for_Containers-en-US.pdf
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.6/html-single/migration_toolkit_for_containers/index#migration-mtc-workflow_migrating-4-1-4
+
+Pg40
+
+
+connecting to the mig console
+
+https://migration-openshiftmigration.apps.labjul-student0.openshift.awsworkshop.io
+
+== create replication repo
+
+== migration plan
+
+only migrates current project
+
+
+== add clusters
+
+must be installed same version on both clusters
+

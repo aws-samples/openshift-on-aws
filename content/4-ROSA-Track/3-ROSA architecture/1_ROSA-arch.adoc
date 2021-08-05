@@ -123,8 +123,10 @@ image::rosa-arch-multi.png[Rosa multi arch]
 #### ROSA Private cluster with Private-Link
 
 ----
-rosa create cluster --private-link --cluster-name rosaprivatelink --multi-az --region us-west-2 --version 4.8.2 --enable-autoscaling --min-replicas 3 --max-replicas 3 --machine-cidr 10.0.0.0/16 --service-cidr 172.30.0.0/16 --pod-cidr 10.128.0.0/14 --host-prefix 23 —subnet-ids subnet-0a34c58efd2687955,subnet-0f8d8e6e213c5ba15,subnet-04e7a92df201ee976
+rosa create cluster --cluster-name rosaprivatelink --multi-az --region us-west-2 --version 4.8.2 --enable-autoscaling --min-replicas 3 --max-replicas 3 --machine-cidr 10.0.0.0/16 --service-cidr 172.30.0.0/16 --pod-cidr 10.128.0.0/14 --host-prefix 23 --private-link --subnet-ids subnet-00cbba3684292677e,subnet-0f16db5662540af92,subnet-0647e829f3b771f0e
 ----
+
+image::rosa-create-privatelink.png[Rosa tarnsitgw arch]
 
 ROSA Private link clusters can only be deployed into an existing VPC.
 
