@@ -19,9 +19,10 @@ The Amazon controllers for Kubernettes is an open source project allowing dev an
 https://aws.amazon.com/blogs/containers/aws-controllers-for-kubernetes-ack/
 https://aws.github.io/aws-controllers-k8s/
 
-The Amazon controllers for Kubernettes has now been taken over by the AWS container service team and will be going through a complete redesign and will become a tier 1 Open Source Project.
+ACK provides a framework to create operators which directly interact with AWS Service APIs. Red Hat have integrated ACK into OpenShift and used ACK to create a growing collection of operators for AWS native services. These operators can be accessed directly from the OpenShift operator hub.
 
-For dev and ops teams looking to manage AWS resources from within OpenShift itself this is certainly a project to keep track of.
+image::rosaack.png[image]
+
 
 
 

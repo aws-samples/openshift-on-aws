@@ -41,7 +41,8 @@ Everything has some form of dependency what we are mainly concerned about is whi
 
 Which micro services interact with each other, ideally these should be migrated together to avoid traffic moving back and forth between AWS and on premises or other environments. Like wise data sources, if these are remaining in their current location what will the impact of this be?
 
-Though it is common within hybrid use cases to have application workloads interact with services or data sources in other evnironments it should be considered for how long this will be the case, what are the implecations on performances, and resilience.
+Though it is common within hybrid use cases to have application workloads interact with services or data sources in other environments it should be considered for how long this will be the case, what are the implications on performances, and resilience.
+
 
 *Data Sources :*
 Existing applications have related data, this may be databases or a variety of other sources. Are these also being migrated? What is the size and nature of these sources, how will they be migrated? Should these not be migrated very careful consideration should be taken with regard to how will migrated workloads connect back to these sources. Factors such as connectivity, security, performance and resilience become critical to assess. 

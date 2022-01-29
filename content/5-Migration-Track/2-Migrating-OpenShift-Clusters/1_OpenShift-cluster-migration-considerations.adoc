@@ -37,19 +37,19 @@ This will often include networking, security etc, then how does their current me
 
 Helping these customers grasp AWS services such as VPC, IAM, Direct Connect, Transit gateway, control tower, organizations, as quickly as possible can have a very real impact on the migration timeframe.
 
-There is a risk in not including a variety of stake holders during this process. enaging with a team of application owners, or a cloud, or infrastructure team in isolation will result in addressing concerns only to have to repeat the process with a slightly different focus for another team. This commonly manifests when security teams are only included at a later stage. To avoid resetting the conversation it is best to include stake holders very early on. In the case of OpenShift there is always a Security stake holder, an infrastructure stake holder, and a developer or application owner.
+There is a risk in not including a variety of stake holders during this process. engaging with a team of application owners, or a cloud, or infrastructure team in isolation will result in addressing concerns only to have to repeat the process with a slightly different focus for another team. This commonly manifests when security teams are only included at a later stage. To avoid resetting the conversation it is best to include stake holders very early on. In the case of OpenShift there is always a Security stake holder, an infrastructure stake holder, and a developer or application owner.
 
 AWS professional services engagements may be helpful in this context.
 
 *Customers with deep technical skills on AWS but new to OpenShift*
 
-There are a few drivers for this situation, it may be an infrastructure or Cloud center of excellence which is considering migrating a platform for another team and thus they have skills around AWS but limited understanding of OpenShift. This also manifests as a result of company acquitions. 
+There are a few drivers for this situation, it may be an infrastructure or Cloud center of excellence which is considering migrating a platform for another team and thus they have skills around AWS but limited understanding of OpenShift. This also manifests as a result of company acquisitions. 
 
 There should be questions asked:
 If the team has no OpenShift skills, then who is installing, configuring the existing platform?
 The answer may highlight long term risks.
 This may open the door to explore managed OpenShift options instead of self managed such as the *Red Hat OpenShift Service on AWS* (ROSA)
-This may translate to inclution of stake holders, i.e have the cloud team prepare the AWS environment, then have the application platform owner deploy OpenShift.
+This may translate to inclusions of stake holders, i.e have the cloud team prepare the AWS environment, then have the application platform owner deploy OpenShift.
 
 Having Red Hat consulting teams or a Service integrator (SI) assist may be prudent. 
 
@@ -58,7 +58,8 @@ Having Red Hat consulting teams or a Service integrator (SI) assist may be prude
 This is an interesting situation... Is this a net new OpenShift customer? 
 In this case there is a large amount of learning to do in order to successfully migrate. Teams will need to digest all the info needed for AWS as well as OpenShift. 
 
-This is an ideal situation to bring in help, That help would likely be in the form of consulting enagegments.
+This is an ideal situation to bring in help, That help would likely be in the form of consulting engagements.
+
 
 
 == Feature and function use:

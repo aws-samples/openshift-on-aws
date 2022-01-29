@@ -1,7 +1,7 @@
 +++
 title = "The Amazon Controller for Kubernettes"
 chapter = false
-weight = 3
+weight = 1
 +++
 
 
