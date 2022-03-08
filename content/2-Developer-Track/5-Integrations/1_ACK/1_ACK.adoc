@@ -1,5 +1,5 @@
 +++
-title = "The Amazon Controller for Kubernettes"
+title = "The Amazon Controller for Kubernetes"
 chapter = false
 weight = 1
 +++
@@ -12,7 +12,7 @@ Over the paste few years there has been a clear shift away from Open Service Bro
 
 The Amazon controler for Kubernettes an open source project allowing dev and ops teams to provision AWS services from within OpenShift using Kubernettes commands. The endpoints, and creds needed to consume these services are stored in the OpenShift secrets and can be bound to applications running in OpenShift.
 
-image::ACK.png[project]
+image::rosaack.png[project]
 image::ACK.gif[project]
 
 

@@ -1,0 +1,10 @@
++++
+title = "Installing Amazon Controller for Kubernettes"
+chapter = false
+weight = 2
++++
+
+
+:imagesdir: /images
+
+

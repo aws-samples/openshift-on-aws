@@ -1,0 +1,10 @@
++++
+title = "Implemeneting fine grained permisions with ACK"
+chapter = false
+weight = 4
++++
+
+
+:imagesdir: /images
+
+
