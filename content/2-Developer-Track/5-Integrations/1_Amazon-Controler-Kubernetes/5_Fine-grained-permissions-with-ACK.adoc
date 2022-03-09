@@ -1,5 +1,5 @@
 +++
-title = "Implemeneting fine grained permisions with ACK"
+title = "Implementing fine grained permisions with ACK"
 chapter = false
 weight = 5
 +++
