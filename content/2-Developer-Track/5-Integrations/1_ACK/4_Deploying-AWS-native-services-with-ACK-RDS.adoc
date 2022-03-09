@@ -1,0 +1,482 @@
++++
+title = "Deploying AWS Services with ACK - Relational Database Service RDS"
+chapter = false
+weight = 4
++++
+
+
+:imagesdir: /images
+
+
+PREREQUISITES:
+This lab assumes you have completed the install of ACK on OpenShift, if you have not already completed this please complete the installing ACK lab:
+
+The following should already have been completed:
+
+* Created a project for ACK
+* Created a Service user account
+* Created a ConfigMap and Secret
+* Attached AWS IAM policeis 
+
+In this LAB we are going to a new AWS VPC separate form the one OpenShift is deployed in. No not from infrastructure as code deployed by an infrastructure team instead the OpenShift application owner will create the VPC using ACK from within OpenShift, connect it tothe OpenShift VPC using AWS VPC peering then deploy AWS RDS as a relational database into the new VPC.
+
+We will need to deploy two ACK operators for this LAB, the ACK operator for RDS and the ACK operator for EC2. We will use the EC2 Operator to provision a new VPC.
+
+
+Step 1:: Serach for the ACK operators from within the OpenShift operator hub
+
+
+While logged into the OpenShift web console:
+
+----
+Change to the administrator console.
+
+Click on Operators on the Left.
+
+Select Operator Hub.
+
+Type * AWS * into the search text box, press enter.
+
+----
+
+Step 2:: Install the ACK EC2 Operator
+
+----
+Find the ACK EC2 Operator  in the OperatorHub and click on it
+
+Click Install
+
+Leave all settings default, Click on Install
+
+----
+
+Step 3:: Install the ACK RDS Operator
+
+----
+Find the ACK RDS Operator  in the OperatorHub and click on it
+
+Click Install
+
+Leave all settings default, Click on Install
+
+----
+
+image::ackrds1.png[project]
+image::ackrds2.png[project]
+image::ackrds3.png[project]
+
+Step 4:: Confirm the operators are running
+
+----
+oc get pod -n ack-system
+----
+
+You should see something like the following:
+
+----
+NAME                                   READY  STATUS    RESTARTS  AGE
+ack-ec2-controller-5c647cc8c5-wwgck    1/1    Running   0         13m
+ack-rds-controller-5b5dd4745-7lj5f     1/1    Running   0         6m50s
+----
+
+Step 5:: create an OpenShift project:
+
+----
+oc new-project ack-workspace
+----
+
+Step 6:: Create a new VPC for the Database.
+
+We are going to create a separate AWS VPC for the RDS instance with CIDR block 100.68.0.0/18, this VPC will contain multiple Subnets each mapping to a different AWS availability zone so that we are able to deploy a multi-az RDS instance in order to cater for better resilience.  
+
+----
+cat <<EOF > ./rds-vpc.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: VPC
+metadata:
+  name: rosa-rds-vpc
+  namespace: ack-workspace
+  labels:
+    vpc: rosa-rds
+spec:
+  cidrBlock: 100.68.0.0/18
+EOF
+❯
+❯ oc apply -f ./rds-vpc.yaml
+vpc.ec2.services.k8s.aws/rosa-rds-vpc created
+❯
+❯ oc get vpc.ec2.services.k8s.aws/rosa-rds-vpc -oyaml | grep vpcID
+  vpcID: vpc-09f8cdf865c44d5b0
+❯
+❯ export RDS_VPC_ID=vpc-09f8cdf865c44d5b0
+----
+
+Step 7:: confirm the VPC has been created:
+
+----
+aws ec2 describe-vpcs --vpc-ids $RDS_VPC_ID
+----
+
+You should see something like :
+----
+{
+    "Vpcs": [
+        {
+            "CidrBlock": "100.68.0.0/18",
+            "DhcpOptionsId": "dopt-0efa9af123cd44fa9",
+            "State": "available",
+            "VpcId": "vpc-09f8cdf865c44d5b0",
+            "OwnerId": "637075021655",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-06303b36248cf51ec",
+                    "CidrBlock": "100.68.0.0/18",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false
+        }
+    ]
+}
+----
+
+Step 8:: Create subnets:
+
+We will create subnets in two Availability Zones so that we can take advantage of resilience provided by multiAZ RDS. These subnets will be used when creating DB subnet group. A DB subnet group is a collection of subnets (typically private) that you create in a VPC and that you then designate for your DB instances. A DB subnet group allows you to specify a particular VPC when creating DB instances using the CLI or API.
+
+----
+cat <<EOF > ./rds-subnet-a.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: rds-subnet-eu-west-2a
+  namespace: ack-workspace
+spec:
+  cidrBlock: 100.68.18.0/24
+  vpcID: $RDS_VPC_ID
+  availabilityZone: eu-west-2a
+EOF
+----
+
+----
+oc apply -f ./rds-subnet-a.yaml
+subnet.ec2.services.k8s.aws/rds-subnet-eu-west-2a created
+----
+
+----
+cat <<EOF > ./rds-subnet-b.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: rds-subnet-eu-west-2b
+  namespace: ack-workspace
+spec:
+  cidrBlock: 100.68.20.0/24
+  vpcID: $RDS_VPC_ID
+  availabilityZone: eu-west-2b
+EOF
+----
+
+----
+oc apply -f ./rds-subnet-b.yaml
+subnet.ec2.services.k8s.aws/rds-subnet-eu-west-2b created
+----
+
+
+Step 9:: Export the Subnet IDs for later use:
+
+We will first decribe the subnet, then export the subnet id. Please update the explore command with the ID from the actual output as it will be different from what is seen below:
+
+----
+oc get subnet.ec2.services.k8s.aws/rds-subnet-eu-west-2a -oyaml |grep subnetID
+----
+
+you will see something like :
+----
+subnetID: subnet-0e93c060fb95a3f7e
+----
+
+export RDS_SUBNET_A_ID=subnet-0e93c060fb95a3f7e
+----
+
+----
+oc get subnet.ec2.services.k8s.aws/rds-subnet-eu-west-2b -oyaml |grep subnetID
+----
+
+You will see something like :
+----
+subnetID: subnet-080e3a66c7ba6e984
+----
+
+----
+export RDS_SUBNET_B_ID=subnet-080e3a66c7ba6e984
+----
+
+Step 10:: Create DB Subnet Group:
+
+----
+cat <<EOF > ./db-subnet-group.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: rdsdbsubnetgroup
+  namespace: ack-workspace
+spec:
+  subnetIDs:
+    - $RDS_SUBNET_A_ID
+    - $RDS_SUBNET_B_ID
+  description: RDS DB subnet group
+  name: rdsdbsubnetgroup
+EOF
+----
+
+----
+oc apply -f ./db-subnet-group.yaml
+----
+
+You should see something like :
+
+----
+dbsubnetgroup.rds.services.k8s.aws/rdsdbsubnetgroup created
+----
+
+Step 11:: Create a VPC Security Group:
+
+----
+cat <<EOF > ./vpc-security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: rdssecuritygroup
+  namespace: ack-workspace
+spec:
+  description: RDS VPC security group
+  name: rdssecuritygroup
+  vpcID: $RDS_VPC_ID
+EOF
+----
+
+----
+oc apply -f vpc-security-group.yaml
+----
+
+Lets get the security group ID and export it so we can use it when creating the RDS instance.
+
+----
+oc get securitygroup.ec2.services.k8s.aws/rdssecuritygroup -oyaml |grep id
+----
+
+ou should see something like:
+
+----
+id: sg-0471d3fb75233f936
+----
+
+----
+export RDS_VPC_SECURITY_GROUP_ID=sg-0471d3fb75233f936
+----
+
+Step 12:: Create an RDS instance:
+
+First lets create a secret in OpenShift for Master database user.
+----
+oc create secret generic db-admin-pass \
+  --from-literal=password='mydbpassword' -n ack-workspace
+----
+
+Now lets create the RDS instance
+----
+cat <<EOF > ./rds-db-instance.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: rdsmysqldb
+  namespace: ack-workspace
+spec:
+  vpcSecurityGroupIDs:
+    - $RDS_VPC_SECURITY_GROUP_ID
+  masterUserPassword:
+    key: password
+    name: db-admin-pass
+    namespace: ack-workspace
+  engine: mysql
+  dbInstanceClass: db.t2.micro
+  dbInstanceIdentifier: rdsmysqldbinstance
+  port: 3306
+  availabilityZone: eu-west-2a
+  dbName: rdsmysqldb
+  dbSubnetGroupName: rdsdbsubnetgroup
+  allocatedStorage: 5
+  engineVersion: 5.7.36
+  masterUsername: mydbadmin
+  maxAllocatedStorage: 10
+EOF
+----
+
+----
+oc apply -f ./rds-db-instance.yaml
+----
+
+Lets confirm status.
+
+----
+aws rds describe-db-instances --db-instance-identifier rdsmysqldbinstance
+----
+
+You should see something like :
+----
+{
+    "DBInstances": [
+        {
+            "DBInstanceIdentifier": "rdsmysqldbinstance",
+            "DBInstanceClass": "db.t2.micro",
+            "Engine": "mysql",
+            "DBInstanceStatus": "available",
+            "MasterUsername": "mydbadmin",
+            "DBName": "rdsmysqldb",
+            "Endpoint": {
+                "Address": "rdsmysqldbinstance.abceexample.eu-west-2.rds.amazonaws.com",
+                "Port": 3306,
+                "HostedZoneId": "Z1TTGA775OQIYO"
+            },
+            ...some output truncated...
+        }
+    ]
+}
+----
+
+Step 13:: Peering the VPCs
+
+
+A VPC peering connection (https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html) is a networking connection between two VPCs that enables you to route traffic between them using private IPv4 addresses or IPv6 addresses. Instances in either VPC can communicate with each other as if they are within the same network. You can create a VPC peering connection between your own VPCs, or with a VPC in another AWS account. The VPCs can be in different regions (also known as an inter-region VPC peering connection).
+
+Create and accept a VPC Peering Connection between ROSA VPC and RDS VPC
+
+Get the VpcId of the OpenShift VPC, if you made use of a ROSA cluster you can use the AWS Tags created during cluster launch which contain the OpenShift cluster name
+
+----
+ROSA_VPC_ID=$(aws ec2 describe-vpcs --filters Name=tag:Name,Values="$ROSA_CLUSTER_NAME-*" --query "Vpcs[].VpcId" --output text)
+----
+
+Create the peering connection between ROSA VPC and RDS VPC
+----
+aws ec2 create-vpc-peering-connection --vpc-id $ROSA_VPC_ID --peer-vpc-id $RDS_VPC_ID ❯ VPC_PEER_ID=$(aws ec2 describe-vpc-peering-connections --query "VpcPeeringConnections[].VpcPeeringConnectionId" --output text)
+----
+
+We will need to accept the VPC peering connection
+
+----
+aws ec2 accept-vpc-peering-connection --vpc-peering-connection-id $VPC_PEER_ID
+----
+
+Update ROSA VPC Route table
+
+Get the route associated with the three public subnets of the ROSA VPC and add a route to the table so that all traffic to the RDS VPC CIDR block is via the VPC Peering Connection:
+
+----
+ROSA_ROUTE_TABLE_ID=$(aws ec2 describe-route-tables --filters  Name=tag:Name,Values="$ROSA_CLUSTER_NAME-*-public" --query 'RouteTables[].RouteTableId' --output text)
+----
+
+----
+aws ec2 create-route --route-table-id ${ROSA_ROUTE_TABLE_ID} --destination-cidr-block 100.68.0.0/18 --vpc-peering-connection-id ${VPC_PEER_ID}
+----
+
+Step 14:: Update RDS Instance Security Group:
+
+Update the Security Group to allow all ingress traffic from the ROSA cluster to the RDS instance on port 3306:.
+
+----
+aws ec2 authorize-security-group-ingress --group-id ${RDS_VPC_SECURITY_GROUP_ID} --protocol tcp --port 3306 --cidr 10.0.0.0/16
+----
+
+Step 15:: connecting OpenShift Applications to RDS ina different VPC:
+
+Validate the connection to RDS
+
+Now, you are ready to validate the connection to the RDS MySQL database from a pod running on the ROSA cluster.
+Create a Kubernetes Service named mysql-service of type ExternalName aliasing the RDS endpoint:
+
+----
+DB_INST_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier rdsmysqldbinstance --query "DBInstances[].Endpoint[].Address" --output text)
+----
+
+----
+cat <<EOF > ./mysql-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+        app: mysql-service
+  name: mysql-service
+  namespace: ack-workspace
+spec:
+  externalName: $DB_INST_ENDPOINT
+  selector:
+        app: mysql-service
+  type: ExternalName
+status:
+  loadBalancer: {}
+EOF
+----
+
+----
+oc apply -f ./mysql-service.yaml
+----
+
+Connect to the RDS MySQL database from a pod using mysql-57-rhel7 image
+
+----
+oc run -i --tty --rm debug --image=registry.access.redhat.com/rhscl/mysql-57-rhel7 --restart=Never -- sh
+----
+
+If you don't see a command prompt, try pressing enter.
+
+----
+
+sh-4.2$ which mysql
+/opt/rh/rh-mysql57/root/usr/bin/mysql
+sh-4.2$ mysql -h rdsmysqldbinstance.abceexample.eu-west-2.rds.amazonaws.com -u mydbadmin -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 232
+Server version: 5.7.36-log Source distribution
+
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases
+    -> ;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| innodb             |
+| mysql              |
+| performance_schema |
+| rdsmysqldb         |
+| sys                |
++--------------------+
+6 rows in set (0.00 sec)
+
+mysql> quit
+Bye
+sh-4.2$ exit
+exit
+pod "debug" deleted
+
+----
+
+In this lab we deployed the ACK operators for RDS and EC2, used these to provision a VPC, a VPC peering link and an RDS instance.
+We then connected from an application workload running in OpenShift to the RDS instance.
+
+
+
+
