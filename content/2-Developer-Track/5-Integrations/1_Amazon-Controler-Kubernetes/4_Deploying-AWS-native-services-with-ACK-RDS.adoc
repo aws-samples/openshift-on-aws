@@ -435,44 +435,33 @@ oc run -i --tty --rm debug --image=registry.access.redhat.com/rhscl/mysql-57-rhe
 If you don't see a command prompt, try pressing enter.
 
 ----
+which mysql
+----
 
-sh-4.2$ which mysql
+you should see something like:
+----
 /opt/rh/rh-mysql57/root/usr/bin/mysql
-sh-4.2$ mysql -h rdsmysqldbinstance.abceexample.eu-west-2.rds.amazonaws.com -u mydbadmin -p
-Enter password:
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 232
-Server version: 5.7.36-log Source distribution
+----
 
-Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+Lets log into the mysql database using the password from step 12.
+----
+mysql -h rdsmysqldbinstance.abceexample.eu-west-2.rds.amazonaws.com -u mydbadmin -p
+----
 
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> show databases
-    -> ;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| innodb             |
-| mysql              |
-| performance_schema |
-| rdsmysqldb         |
-| sys                |
-+--------------------+
-6 rows in set (0.00 sec)
-
-mysql> quit
-Bye
-sh-4.2$ exit
-exit
-pod "debug" deleted
+image::ackrds5.png[project]
 
 ----
+show databases
+----
+
+image::ackrds4.png[project]
+
+----
+quit
+
+exit
+----
+
 
 In this lab we deployed the ACK operators for RDS and EC2, used these to provision a VPC, a VPC peering link and an RDS instance.
 We then connected from an application workload running in OpenShift to the RDS instance.
