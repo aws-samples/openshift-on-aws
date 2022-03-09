@@ -1,5 +1,5 @@
 +++
-title = "Deploying AWS Services with ACK"
+title = "Deploying AWS Services with ACK - DynamoDB"
 chapter = false
 weight = 3
 +++
@@ -7,4 +7,88 @@ weight = 3
 
 :imagesdir: /images
 
+
+PREREQUISITES:
+This lab assumes you have completed the install of ACK on OpenShift, if you have not already completed this please complete the installing ACK lab:
+
+The following should already have been completed:
+
+* Created a project for ACK
+* Created a Service user account
+* Created a ConfigMap and Secret
+* Attached AWS IAM policeis 
+
+In this LAB we are going to cater for a NoSQL database using AWS DynomoDB. DynamoDB is a fully managed, serverless, key-value NoSQL database designed to run high-performance applications at any scale. DynamoDB offers built-in security, continuous backups, automated multi-region replication, in-memory caching, and data export tools. We will use the Amazon controller for Kubernetes installed on OpenShift to provision a DynamoDB table to compliment workloads running in OpenShift.
+
+
+Step 1:: Attach ack-service-controller user the  AWS IAM policies for AWS DynamoDB
+
+----
+aws iam attach-user-policy \
+--user-name ack-service-controller \
+--policy-arn 'arn:aws:iam::aws:policy/DynamoDBFullAccess'
+----
+
+
+Step 2:: Serach for the ACK operators from within the OpenShift operator hub
+
+While logged into the OpenShift web console:
+
+----
+Change to the administrator console.
+
+Click on Operators on the Left.
+
+Select Operator Hub.
+
+Type * AWS * into the search text box, press enter.
+
+Find the ACK DynamoDB Operator and click on it
+----
+
+Step 3:: Install the ACK DynamoDB Operator
+
+----
+Find the ACK DynamoDB Operator  in the OperatorHub and click on it
+
+Click Install
+
+Leave all settings default, Click on Install
+
+----
+
+image::rosaack.png[project]
+image::ackddb1.png[project]
+image::ackddb2.png[project]
+image::ackddb3.png[project]
+
+Step 4:: Create a DynamoDB table using ACK:
+
+----
+oc new-project ack-workspace
+----
+
+----
+cat <<EOF > ./dynamodb-table.yaml
+apiVersion: dynamodb.services.k8s.aws/v1alpha1
+kind: Table
+metadata:
+  name: productcatalog
+  namespace: ack-workspace
+spec:
+  keySchema:
+    - attributeName: Id
+      keyType: HASH
+  attributeDefinitions:
+    - attributeName: Id
+      attributeType: 'N'
+  provisionedThroughput:
+    readCapacityUnits: 1
+    writeCapacityUnits: 1
+  tableName: ProductCatalog
+EOF
+----
+
+
+The Amazon Controller for Kubernetes does not make use of Infrastructure as code templates but instead allows application owners and kubernetes users to define AWS Native services according to their needs directly from within OpenShift. 
 
