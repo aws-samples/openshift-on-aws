@@ -1,0 +1,285 @@
++++
+title = "Implementing fine grained permisions with STS"
+chapter = false
+weight = 5
++++
+
+
+:imagesdir: /images
+
+PREREQUISITES:
+This lab assumes you have deployed and STS ROSA cluster and completed the install of ACK on OpenShift, if you have not already completed this please complete the deploying ROSA STS lab under the Red Hat OpenShift Service on AWS (ROSA) track and the installing ACK lab:
+
+The following should already have been completed:
+
+* Provisioned a ROSA STS Cluster
+* Created a project for ACK
+* Created a Service user account
+* Created a ConfigMap and Secret
+* Attached AWS IAM policies 
+
+OpenShift has been integrated with  AWS Security Token Service (STS) (https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html), AWS STS is an AWS service that allows AWS users, authenticated via IAM or federation, to request temporary security credentials for your AWS resources. OpenShift users can allocate administrative permissions on-demand.  The temporary security credentials work exactly like regular long term security access key credentials allocated to IAM users, except the lifecycle of the access credentials is shorter. Additionally, the temporary credentials are not stored with the user and instead are generated dynamically and provided to the user on demand. When the temporary credentials expire, the user can simply request new ones.
+
+AWS IAM supports federated identities using OpenID Connect (OIDC) identity provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html) . This feature allows us to authenticate AWS API calls with supported identity providers and receive a valid OIDC JSON web token (JWT). PODs can pass this token to the AWS STS *AssumeRoleWithWebIdentity* API operation and receive IAM temporary role credentials.
+
+In this LAB, we will discuss how to leverage the OIDC identity provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html)created during OpenShift cluster Provisioning and use it with IAM Roles for the Service Accounts (IRSA).  IRSA allows us to associate an IAM Role with a Kubernetes service account, and this service account can then grant permissions to any pod that uses it.
+
+Using IRSA has the benefit of using the least privileged recommendation and credential isolations, meaning that the container within the pod can only retrieve credentials for the IAM role associated with the service account to which the pod belongs. We can get also better auditing, having access and event logging available through AWS CloudTrail.
+
+Step 0:: Export a few values we will reuse later in the lab:
+
+----
+export ROSA_CLUSTER_NAME=<rosa cluster name>
+export SERVICE="s3"
+export AWS_REGION=<aws region id>
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export APP_NAMESPACE=iam-app
+export APP_SERVICE_ACCOUNT_NAME=iam-app-$SERVICE-sa
+----
+
+Step 1:: Get the OIDC endpoint from an existing ROSA Cluster:
+
+When deploying OpenShift with STS an OIDC endpoint is created, in this LAB we will reuse this existing endpoint.
+
+----
+oc get authentication.config.openshift.io cluster -oyaml | grep serviceAccountIssuer
+----
+
+You should see something like:
+----
+serviceAccountIssuer:          https://rh-oidc.s3.us-east-1.amazonaws.com/examplec8hsbd4998jv7lgctafu9t
+----
+
+Lets store this for later:
+----
+OIDC_PROVIDER=rh-oidc.s3.us-east-1.amazonaws.com/examplec8hsbd4998jv7lgctafu9t
+----
+
+Step 2:: Create an OpenShift project and service account for the application workload:
+
+----
+oc create new-project $APP_NAMESPACE
+
+oc create serviceaccount $APP_SERVICE_ACCOUNT_NAME -n $APP_NAMESPACE
+----
+
+Step 3:: Create an IAM role for the application Service Account
+
+----
+cat <<EOF > ./trust.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${APP_NAMESPACE}:${APP_SERVICE_ACCOUNT_NAME}"
+        }
+      }
+    }
+  ]
+}
+EOF
+----
+----
+APP_IAM_ROLE="iam-app-${SERVICE}-role"
+----
+----
+APP_IAM_ROLE_ROLE_DESCRIPTION='IRSA role for APP $SERVICE deployment on ROSA cluster'
+aws iam create-role --role-name "${APP_IAM_ROLE}" --assume-role-policy-document file://trust.json --description "${APP_IAM_ROLE_ROLE_DESCRIPTION}"
+----
+----
+APP_IAM_ROLE_ARN=$(aws iam get-role --role-name=$APP_IAM_ROLE --query Role.Arn --output text)
+----
+
+Step 4:: Attach IAM policy to the IAM role:
+
+Download the recommended managed and inline policies and apply them to the newly created IRSA role, we created a variable for the AWS Simply Storage Service (S3) (https://aws.amazon.com/s3/) in step, looking at the base URL below we will use the policy for S3. 
+
+----
+BASE_URL=https://raw.githubusercontent.com/aws-controllers-k8s/${SERVICE}-controller/main
+
+POLICY_ARN_URL=${BASE_URL}/config/iam/recommended-policy-arn
+
+POLICY_ARN="$(wget -qO- ${POLICY_ARN_URL})"
+
+aws iam attach-role-policy --role-name "${APP_IAM_ROLE}" --policy-arn "${POLICY_ARN}" > /dev/null
+----
+
+
+Step 5:: Associate the IAM role created to the service account:
+
+For the moment, the Amazon Resource Name (ARN) of the IAM role created is not yet an annotation for the service account. Use the below command to associate an IAM role to the service account.
+
+----
+export IRSA_ROLE_ARN=eks.amazonaws.com/role-arn=$APP_IAM_ROLE_ARN
+
+oc annotate serviceaccount -n $APP_NAMESPACE $APP_SERVICE_ACCOUNT_NAME $IRSA_ROLE_ARN
+----
+
+lets describe the service account:
+----
+oc describe serviceaccount $APP_SERVICE_ACCOUNT_NAME -n $APP_NAMESPACE
+----
+
+You should see something like:
+----
+Name:                iam-app-s3-sa
+ Namespace:           iam-app
+ Labels:              <none>
+ Annotations:         eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<APP_IAM_ROLE>
+ Image pull secrets:  iam-app-s3-sa-dockercfg-wk7tz
+ Mountable secrets:   iam-app-s3-sa-token-pqpkd
+                      iam-app-s3-sa-dockercfg-wk7tz
+ Tokens:              iam-app-s3-sa-token-pqpkd
+                      iam-app-s3-sa-token-vngcg
+ Events:              <none>
+----
+
+Step 6:: Deploy an application workload which interacts with AWS and fine grained policies:
+----
+cat <<EOF | oc create -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ${APP_NAMESPACE}
+  name: awscli
+  labels:
+    app: awscli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awscli
+  template:
+    metadata:
+      labels:
+        app: awscli
+    spec:
+      containers:
+        - image: amazon/aws-cli:latest
+          name: awscli
+          command:
+            - /bin/sh
+            - "-c"
+            - while true; do sleep 10; done
+          env:
+            - name: HOME
+              value: /tmp
+      serviceAccount: ${APP_SERVICE_ACCOUNT_NAME}
+EOF
+----
+
+When AWS clients or SDKs connect AWS APIs, they detect an AssumeRoleWithWebIdentity (https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html) security tokens to assume the IAM role.
+
+We can use the following command to describe the pods and verify the AWS_WEB_IDENTITY_TOKEN_FILE and AWS_ROLE_ARN environment variables exist for your application deployed.
+
+Lets describe the pod
+----
+oc describe pod $(oc get pod -l app=awscli -o jsonpath='{.items[0].metadata.name}') | grep "^\s*AWS_"
+----
+
+you should see something like:
+----
+AWS_ROLE_ARN: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<APP_IAM_ROLE>
+AWS_WEB_IDENTITY_TOKEN_FILE: /var/run/secrets/eks.amazonaws.com/serviceaccount/token (http://eks.amazonaws.com/serviceaccount/token)
+----
+
+If we inspect the contents of that token:
+----
+Volumes:
+  aws-iam-token:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  86400
+----
+
+Step 7:: Create a S3 bucket and attach a policy to it using the AWS CLI:
+
+We will later have a container workload running in openshift read and write from this bucket:
+
+----
+export S3_BUCKET_NAME=$ROSA_CLUSTER_NAME-iam-app
+
+export $BUCKET_POLICY_NAME=$S3_BUCKET_NAME-policy
+
+----
+----
+aws s3api create-bucket --bucket $S3_BUCKET_NAME --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION > /dev/null
+----
+
+----
+cat <<EOF > ./bucket-policy.json
+{
+"Version": "2012-10-17",
+"Statement": [
+ {
+   "Effect": "Allow",
+   "Action": ["s3:ListBucket"],
+   "Resource": ["arn:aws:s3:::${S3_BUCKET_NAME}"]
+ },
+ {
+   "Effect": "Allow",
+   "Action": [
+     "s3:PutObject",
+     "s3:GetObject",
+     "s3:DeleteObject"
+   ],
+   "Resource": ["arn:aws:s3:::${S3_BUCKET_NAME}/*"]
+ }
+]
+}
+EOF
+----
+----
+aws iam create-policy --policy-name $BUCKET_POLICY_NAME --policy-document file://bucket-policy.json
+----
+
+Step 8:: Verify the solution
+
+Verify the solution by starting a remote shell into the running pod and then use the AWS CLI to write to the S3 bucket created.
+
+----
+oc rsh $(oc get pod -l app=awscli -o jsonpath='{.items[0].metadata.name}')
+----
+
+----
+aws s3 ls
+----
+
+Create a file, upload it into the S3 bucket and check the content of the S3 bucket
+
+----
+echo "Hello from ROSA" > /tmp/rosa.txt
+----
+----
+aws s3 cp /tmp/rosa.txt s3://<S3_BUCKET_NAME>/rosa.txt
+----
+
+You should see something like:
+----
+upload: ../tmp/rosa.txt to s3://<S3_BUCKET_NAME>/rosa.txt
+----
+
+lets read from the bucket:
+----
+aws s3 ls s3://<S3_BUCKET_NAME> --recursive --human-readable --summarize
+----
+
+You Should see something like:
+-----
+2022-01-17 13:50:58   39 Bytes rosa.txt
+
+Total Objects: 1
+   Total Size: 39 Bytes
+-----
+
+
+In this LAB we reused the OIDC endpoint of an OpenShift STS deployment in order to make use of IAM Roles for the Service Accounts (IRSA) within OpenShift. This allows us to provide AWS IAM roles and polices specific to application workloads or operators within OpenShift. i.e application workloads can have better least priviledge and credencial cycling.
+
+
+

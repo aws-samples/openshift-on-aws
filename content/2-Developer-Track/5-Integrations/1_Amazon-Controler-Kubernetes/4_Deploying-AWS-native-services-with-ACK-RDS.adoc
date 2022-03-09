@@ -16,7 +16,7 @@ The following should already have been completed:
 * Created a project for ACK
 * Created a Service user account
 * Created a ConfigMap and Secret
-* Attached AWS IAM policeis 
+* Attached AWS IAM policies 
 
 In this LAB we are going to a new AWS VPC separate form the one OpenShift is deployed in. No not from infrastructure as code deployed by an infrastructure team instead the OpenShift application owner will create the VPC using ACK from within OpenShift, connect it tothe OpenShift VPC using AWS VPC peering then deploy AWS RDS as a relational database into the new VPC.
 
