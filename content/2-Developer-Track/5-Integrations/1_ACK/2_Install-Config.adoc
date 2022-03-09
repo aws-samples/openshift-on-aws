@@ -8,3 +8,129 @@ weight = 2
 :imagesdir: /images
 
 
+AWS and Red Hat have worked togather to create an operator which is used to integrate the Amazon Controller for Kubenetes into OpenShift. This not only allows for simply install and maintenance but also also for ACK to interact with abstractions within OpenShift.
+
+In this module we will install the Amazon Controler for Kubernetes into an existing OpenShift Cluster. 
+
+PREREQUISITES:
+This lab assumes you have an existing OpenShift Cluster and have connected to it using the oc tool set.
+
+
+
+Install AWS Controllers for Kubernetes
+
+Step 1:: Create an OpenShift Project for ACK.
+
+----
+oc new-project ack-system
+----
+
+Step 2:: Create an AWS IAM user to be used as the ACK service usrer account.
+
+Before installing the ACK service controllers, some pre-install steps are necessary to be done. An AWS IAM user needs to be created and policies attached. Please refer to the ACK documentation (https://aws-controllers-k8s.github.io/community/docs/user-docs/openshift/) for this. At this stage ACK on OpenShift does not cater for IAM Roles, an IAM user, access keys and secret keys will be used. IAM Role Support is on the roadmap for ACK on OpenShift.
+
+We will create the IAM user via the AWS CLI
+
+----
+aws iam create-user --user-name ack-service-controller
+----
+
+
+Step 3:: Enable programmatic access for the user you just created:
+
+----
+aws iam create-access-key --user-name ack-service-controller
+----
+
+You should see an output similar to the following:
+
+----
+{
+    "AccessKey": {
+        "UserName": "ack-service-controller",
+        "AccessKeyId": "SOMEACCESSKEYID",
+        "Status": "Active",
+        "SecretAccessKey": "abcdefghIJKLMNOPQRSTUVWXYZabcefghijklMNO",
+        "CreateDate": "2022-01-10T16:39:51+00:00"
+    }
+}
+----
+
+The AccessKeyId and SecretAccessKey to be used later in the lab.
+
+Step 4:: Create ack-config and ack-user-secrets for authentication
+
+Create a file named config.txt with below variable, leaving ACK_WATCH_NAMESPACE blank so the controller can properly watch all namespaces, and change any other values to suit your needs:
+
+----
+cat <<EOF > ./config.txt
+ACK_ENABLE_DEVELOPMENT_LOGGING=true
+ACK_LOG_LEVEL=debug
+ACK_WATCH_NAMESPACE=
+AWS_REGION=eu-west-2
+ACK_RESOURCE_TAGS=rosa-ack
+EOF
+----
+
+Step 5:: Create an OpenShift ConfigMap using the above file
+
+----
+oc create configmap \
+--namespace ack-system \
+--from-env-file=config.txt ack-user-config
+----
+
+Step 6:: Create a temp secrets file with AWS keys within:
+
+Replace the values including <> with the access and secret keys from the IAM user created in step 3.
+
+----
+cat <<EOF > secrets.txt
+AWS_ACCESS_KEY_ID=<SOMEACCESSKEYID>
+AWS_SECRET_ACCESS_KEY=<abcdefghIJKLMNOPQRSTUVWXYZabcefghijklMNO>
+EOF
+----
+
+Step 7:: Create an OpenShift Secret for ACK using the above file
+
+----
+oc create secret generic \
+--namespace ack-system \
+--from-env-file=secrets.txt ack-user-secrets
+----
+
+Step 8::
+
+We will now remove the temp files, the AWS keys stored in OpenShift secrets are stored safely within OpenShift. It is however no safe to leave text files with keys remaining.
+
+----
+rm config.txt secrets.txt
+----
+
+Step 9:: Attach ack-service-controller user the  AWS IAM policies
+
+The Amazon controller for Kubernetes will need permissions within the AWS account to control the various AWS services managed by ACK.
+In this example we will attach existing managed AWS IAM policies for EC2 and RDS. 
+
+----
+aws iam attach-user-policy \
+--user-name ack-service-controller \
+--policy-arn 'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+----
+
+----
+aws iam attach-user-policy \
+--user-name ack-service-controller \
+--policy-arn 'arn:aws:iam::aws:policy/AmazonRDSFullAccess'
+----
+
+Note: You can chose to attach to the user custom or specific policies required by your needs.
+
+Once the above has been completed the AWS Native Services operators can be consumed from the OpenShift operator hub. Open the Red Hat OpenShift Console using cluster-admin username and go to the OperatorHub. Filter items using aws  keyword. A list with all the ACK service controllers available will pop up on the screen.
+
+image::rosaack.png[project]
+
+In the following labs we will deploy instances of ACK AWS services.
+
+
+
