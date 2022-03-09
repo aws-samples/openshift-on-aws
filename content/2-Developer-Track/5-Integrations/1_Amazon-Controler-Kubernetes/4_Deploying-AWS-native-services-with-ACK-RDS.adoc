@@ -199,6 +199,7 @@ you will see something like :
 subnetID: subnet-0e93c060fb95a3f7e
 ----
 
+----
 export RDS_SUBNET_A_ID=subnet-0e93c060fb95a3f7e
 ----
 
